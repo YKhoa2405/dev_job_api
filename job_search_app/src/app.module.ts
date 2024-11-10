@@ -18,6 +18,7 @@ import { ServicesModule } from './services/services.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PermissionModule } from './permission/permission.module';
 import { RolesModule } from './roles/roles.module';
+import { SubscribersModule } from './subscribers/subscribers.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { RolesModule } from './roles/roles.module';
     PaymentsModule,
     PermissionModule,
     RolesModule,
+    SubscribersModule,
   ],
   controllers: [AppController],
   providers: [AppService,

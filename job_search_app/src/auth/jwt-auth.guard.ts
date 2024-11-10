@@ -38,10 +38,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       &&
       targetMethod === permissions.method
     )
-    if (!isExits) {
-      throw new ForbiddenException('Không thể truy cập')
-    }
-    console.log(user)
+    // if (!isExits) {
+    //   throw new ForbiddenException('Không thể truy cập')
+    // }
     return user;
   }
 
