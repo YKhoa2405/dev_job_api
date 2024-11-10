@@ -9,6 +9,7 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from './users.interface';
 import { ConfigService } from '@nestjs/config';
 import { Role, RoleDocument } from 'src/roles/schemas/role.schema';
+import aqp from 'api-query-params';
 
 
 @Injectable()
@@ -32,20 +33,22 @@ export class UsersService {
   }
 
 
-  async create(CreateUserDto: CreateUserDto) {
-    const { email, name, password, avatar } = CreateUserDto
+  async registerUser(CreateUserDto: CreateUserDto) {
+    const { email, name, password, avatar, role } = CreateUserDto
     const isExits = await this.userModel.findOne({ email })
     if (isExits) {
       throw new BadRequestException('Nguoi dung da ton tai')
     }
     const userRole = await this.roleModel.findOne({ name: 'NORMAL_USER' })
-    const hashPassword = this.getHashPassword(CreateUserDto.password)
+    console.log(userRole)
+    const hashPassword = this.getHashPassword(password)
     const newRegister = await this.userModel.create({
       email, name, password: hashPassword, avatar,
       role: {
         _id: userRole?._id
       }
     })
+    console.log(newRegister)
     return newRegister;
   }
 
@@ -75,7 +78,7 @@ export class UsersService {
   findOneByEmail(username: string) {
     return this.userModel.findOne({
       email: username
-    }).populate({ path: 'role', select: { name: 1, permissions: 1 } });
+    }).populate({ path: 'role', select: { name: 1 } });
   }
 
 
@@ -85,25 +88,33 @@ export class UsersService {
     }).select('-password').populate({ path: 'role', select: { name: 1, _id: 1 } });
   }
 
-  async getAllUser(currentPage: number) {
-    const limit = 10;
-    const skip = (currentPage - 1) * limit;
+  async getAllUser(currentPage: number, limit: number, qr: string) {
 
-    const user = await this.userModel
-      .find({ isDeleted: false }) // Filter users where isDelete is false
-      .sort({ createdAt: -1 })   // Sort by createdAt in descending order (newest first)
-      .skip(skip)
-      .limit(limit)
-      .exec();
+    const { filter, sort, population } = aqp(qr);
+    delete filter.page
+    delete filter.pageSize
 
-    const totalUser = await this.userModel.countDocuments();
+    const skip = (+currentPage - 1) * +limit;
+    const defaultLimit = +limit ? +limit : 10
+
+    const totalItems = (await this.userModel.find(filter)).length
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const result = await this.userModel.find(filter).
+      skip(skip).
+      limit(defaultLimit).
+      sort({ createdAt: -1 }).
+      populate(population).
+      exec()
+
     return {
-      meta: {
-        currentPage,
-        totalItems: totalUser,
-        totalPages: Math.ceil(totalUser / limit),
+      meata: {
+        currentPage: currentPage,
+        pageSize: limit,
+        totalItems: totalItems,
+        totalPages: totalPages
       },
-      result: user,
+      result
     };
   }
 

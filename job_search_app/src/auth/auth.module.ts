@@ -11,11 +11,13 @@ import { LocalStrategy } from './passport/local.strategy';
 import { JwtStrategy } from './passport/jwt.strategy';
 import { GoogleStrategy } from './passport/google.strategy';
 import { GithubStrategy } from './passport/github.strategy';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    RolesModule,
 
     JwtModule.registerAsync({
       imports: [ConfigModule],

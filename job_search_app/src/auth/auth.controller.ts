@@ -1,14 +1,18 @@
 import { Controller, Get, Post, Render, UseGuards, Request, Req, Res } from '@nestjs/common';
-import { Public } from 'src/common/decorator/customize';
+import { Public, User } from 'src/common/decorator/customize';
 import { LocalAuthGuard } from './local-auth.guard';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesService } from 'src/roles/roles.service';
+import { IUser } from 'src/users/users.interface';
 
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly rolesService: RolesService
+
   ) { }
 
   @Public()
@@ -19,8 +23,10 @@ export class AuthController {
   }
 
   @Get('currentUser')
-  getProfile(@Request() req) {
-    return req.user;
+  async getCurrenUser(@User() user: IUser) {
+    const temp = await this.rolesService.getRoleDetail(user.role._id) as any
+    user.permisstions = temp.permissions
+    return { user }
   }
 
   // Giao diện login google

@@ -13,17 +13,21 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly filesService: FilesService) { }
 
-  @Post()
+  @Post('register')
   @Public()
   create(
     @Body() CreateUserDto: CreateUserDto,
   ) {
-    return this.usersService.create(CreateUserDto);
+    return this.usersService.registerUser(CreateUserDto);
   }
 
   @Get('/allUser')
-  findAllUser(@Query("page") currentPage: string,) {
-    return this.usersService.getAllUser(+currentPage);
+  findAllUser(
+    @Query("page") currentPage: string,
+    @Query("pageSize") limit: string,
+    @Query() qr: string,
+  ) {
+    return this.usersService.getAllUser(+currentPage, +limit, qr);
   }
 
   @Patch(':id')

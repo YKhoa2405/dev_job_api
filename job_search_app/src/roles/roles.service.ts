@@ -25,35 +25,39 @@ export class RolesService {
   }
 
   async getAllRole(currentPage: number, limit: number, qr: string) {
-    const { filter, sort, population, projection } = aqp(qr)
-    delete filter.currentPage
-    delete filter.limit
-
+    const { filter, sort, population, projection } = aqp(qr);
+    
+    delete filter.page;
+    delete filter.pageSize;
+  
     const skip = (currentPage - 1) * limit;
-    const defaultLimit = limit ? limit : 10
-
-    const totalItems = (await this.roleModel.find()).length;
-    const totalPages = Math.ceil(totalItems / defaultLimit)
-
-
-    const result = await this.roleModel.find(filter)
+    const defaultLimit = limit || 10;
+  
+    const totalItems = await this.roleModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+  
+    const result = await this.roleModel
+      .find(filter)
       .skip(skip)
       .limit(defaultLimit)
       .sort(sort as any)
       .populate(population)
       .select(projection as any)
       .exec();
-
+  
+    console.log("Result:", result);
+  
     return {
-      meata: {
-        currentPage: currentPage,
-        pageSize: limit,
-        totalItems: totalItems,
-        totalPages: totalPages
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
       },
-      result
-    }
+      result,
+    };
   }
+  
 
   async getRoleDetail(id: string) {
     return await this.roleModel

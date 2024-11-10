@@ -15,6 +15,6 @@ export class CreateUserDto {
     @IsOptional()
     name: string
 
-    @IsMongoId({ message: 'role phai la id' })
+    // @IsMongoId({ message: 'role phai la id' })
     role: string
 }
