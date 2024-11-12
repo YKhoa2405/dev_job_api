@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { Subscriber, SubscriberDocument } from 'src/subscribers/schemas/subscriber.schema';
 import { Job, JobDocument } from 'src/jobs/schemas/job.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('mail')
 export class MailController {
@@ -20,12 +21,13 @@ export class MailController {
 
   ) { }
 
-  @Get()
+
+  @Get('bySkills')
   @Public()
+  // Tự động chạy vào 12h khuya thứ 7 hàng tuần
+  @Cron('0 0 * * 6')
   async handleSendMailBySkills() {
     const subscribers = await this.subscriberModel.find({});
-  
-    // Initialize an empty array to store the jobs
     let jobs = [];
   
     for (const subscriber of subscribers) {
@@ -62,11 +64,10 @@ export class MailController {
             countJobs: jobsMatchingSkills?.length  // Number of matching jobs
           }
         });
-  
-        console.log(`Sent email to ${subscriber.email} with ${matchingJobs.length} job(s).`);
       }
     }
   }
+
   
 
 }

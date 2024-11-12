@@ -20,10 +20,11 @@ import { PermissionModule } from './permission/permission.module';
 import { RolesModule } from './roles/roles.module';
 import { SubscribersModule } from './subscribers/subscribers.module';
 import { MailModule } from './mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
-    UsersModule,
+    ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -38,6 +39,7 @@ import { MailModule } from './mail/mail.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    UsersModule,
     AuthModule,
     CompaniesModule,
     JobsModule,

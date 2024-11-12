@@ -16,9 +16,15 @@ export class UsersController {
   @Post('register')
   @Public()
   create(
-    @Body() CreateUserDto: CreateUserDto,
+    @Body() createUserDto: CreateUserDto,
   ) {
-    return this.usersService.registerUser(CreateUserDto);
+    return this.usersService.registerUser(createUserDto);
+  }
+
+  @Public()
+  @Post('verify')
+  async verify(@Body() createUserDto: CreateUserDto, @Query('code') code: string) {
+    return this.usersService.verifyUser(code, createUserDto);
   }
 
   @Get('/allUser')

@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+
 async function bootstrap() {
   // const app = await NestFactory.create(AppModule);
   const app = await NestFactory.create<NestExpressApplication>(
@@ -16,7 +17,9 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views')); // html view
   app.setViewEngine('ejs');
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist:true
+  }));
   app.useGlobalInterceptors(new TransformInterceptor());
 
   // config swagger

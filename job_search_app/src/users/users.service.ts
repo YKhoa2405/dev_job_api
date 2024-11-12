@@ -10,14 +10,19 @@ import { IUser } from './users.interface';
 import { ConfigService } from '@nestjs/config';
 import { Role, RoleDocument } from 'src/roles/schemas/role.schema';
 import aqp from 'api-query-params';
+import { MailService } from 'src/mail/mail.service';
 
 
 @Injectable()
 export class UsersService {
+
+  private codes = new Map<string, string>();
+  private expirationTime = 120000; // 120 giây = 120000 ms
   constructor(
     @InjectModel(User.name) private userModel: SoftDeleteModel<UserDocument>,
     @InjectModel(Role.name) private roleModel: SoftDeleteModel<RoleDocument>,
 
+    private mailService: MailService,
     private configService: ConfigService
 
   ) { }
@@ -32,24 +37,64 @@ export class UsersService {
     return compareSync(password, hash);
   }
 
+  generatecode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
 
-  async registerUser(CreateUserDto: CreateUserDto) {
-    const { email, name, password, avatar, role } = CreateUserDto
-    const isExits = await this.userModel.findOne({ email })
+
+  async registerUser(createUserDto: CreateUserDto) {
+    const { email, name } = createUserDto;
+    const isExits = await this.userModel.findOne({ email });
     if (isExits) {
-      throw new BadRequestException('Nguoi dung da ton tai')
+      throw new BadRequestException('Người dùng đã tồn tại');
     }
-    const userRole = await this.roleModel.findOne({ name: 'NORMAL_USER' })
-    console.log(userRole)
+
+    // Tạo mã xác minh và lưu vào Map
+    const code = this.generatecode();
+    this.codes.set(email, code);
+
+    // Gửi email xác minh qua MailService
+    await this.mailService.sendVerificationEmail(email, name, code);
+
+    setTimeout(() => {
+      this.codes.delete(email);
+    }, this.expirationTime);
+
+    return { message: 'Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.' };
+  }
+
+  async verifyUser(code: string, createUserDto: CreateUserDto) {
+    const { email, name, password, avatar, role } = createUserDto
+    const storedCode = this.codes.get(email);
+    console.log(createUserDto)
+
+    if (!storedCode) {
+      throw new BadRequestException('Không tìm thấy mã xác minh cho email này.');
+    }
+
+    if (storedCode !== code) {
+      throw new BadRequestException('Mã xác minh không đúng.');
+    }
+
+    // Nếu mã xác minh đúng, tạo người dùng
+
+    const userRole = await this.roleModel.findOne({ name: 'NORMAL_USER' });
+
     const hashPassword = this.getHashPassword(password)
-    const newRegister = await this.userModel.create({
-      email, name, password: hashPassword, avatar,
-      role: {
-        _id: userRole?._id
-      }
-    })
-    console.log(newRegister)
-    return newRegister;
+
+    // Tạo người dùng
+    const newUser = await this.userModel.create({
+      email,
+      name,
+      password: hashPassword,
+      avatar,
+      role: userRole?._id,
+    });
+
+    // Xóa mã khỏi Map sau khi sử dụng
+    this.codes.delete(email);
+
+    return { message: 'Tài khoản đã được xác minh và tạo thành công.' };
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto, avatar: string) {
