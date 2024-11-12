@@ -27,6 +27,21 @@ export class UsersController {
     return this.usersService.verifyUser(code, createUserDto);
   }
 
+  @Public()
+  @Post('sendCode')
+  async sendCode(@Body() createUserDto: CreateUserDto) {
+    await this.usersService.sendForgotPassCode(createUserDto);
+    return { message: 'Mã xác minh đã được gửi đến email của bạn.' };
+  }
+
+  @Public()
+  @Post('changePassword')
+  async changePassword(@Body() body: { email:string, code: string, newPassword: string }) {
+    return this.usersService.changePasswordWithCode(body.email,body.newPassword, body.code );
+  }
+
+
+
   @Get('/allUser')
   findAllUser(
     @Query("page") currentPage: string,

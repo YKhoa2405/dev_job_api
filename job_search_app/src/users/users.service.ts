@@ -97,6 +97,52 @@ export class UsersService {
     return { message: 'Tài khoản đã được xác minh và tạo thành công.' };
   }
 
+  // Change Password
+  async sendForgotPassCode(createUserDto: CreateUserDto) {
+    const { email } = createUserDto
+    const isExits = await this.userModel.findOne({ email });
+    if (!isExits) {
+      throw new BadRequestException('Không tìm thấy Email');
+    }
+    const code = this.generatecode();
+    this.codes.set(email, code);
+    await this.mailService.sendForgotPassEmail(email, code);
+    setTimeout(() => this.codes.delete(email), 120000); // Xóa mã sau 120 giây
+  }
+
+  // Thay đổi mật khẩu
+  async changePasswordWithCode(email:string, newPassword: string, code: string): Promise<any> {
+    // const { email } = createUserDto
+
+    const storedCode = this.codes.get(email);
+    if (!storedCode) {
+      throw new BadRequestException('Không tìm thấy mã xác minh cho email này.');
+    }
+
+    if (storedCode !== code) {
+      throw new BadRequestException('Mã xác minh không đúng.');
+    }
+
+    // Tìm người dùng theo email
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('Người dùng không tồn tại.');
+    }
+
+    // Băm mật khẩu mới
+    const hashedPassword = this.getHashPassword(newPassword);
+
+    // Cập nhật mật khẩu người dùng
+    user.password = hashedPassword;
+    await user.save();
+
+    // Xóa mã xác minh đã sử dụng
+    this.codes.delete(email);
+
+    return { message: 'Mật khẩu đã được thay đổi thành công.' };
+  }
+
+
   async updateUser(id: string, updateUserDto: UpdateUserDto, avatar: string) {
     if (avatar) {
       updateUserDto.avatar = avatar;
