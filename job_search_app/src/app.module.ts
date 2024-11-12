@@ -19,6 +19,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { PermissionModule } from './permission/permission.module';
 import { RolesModule } from './roles/roles.module';
 import { SubscribersModule } from './subscribers/subscribers.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { SubscribersModule } from './subscribers/subscribers.module';
     PermissionModule,
     RolesModule,
     SubscribersModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService,

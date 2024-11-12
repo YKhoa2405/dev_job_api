@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Thông báo việc làm</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .job-card {
+      background-color: white;
+      margin: 20px 0;
+      padding: 10px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      border-left: 5px solid #4CAF50;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .job-info {
+      flex: 1;
+    }
+
+    .job-title {
+      font-size: 1.2em;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .company-name {
+      font-size: 1.1em;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .job-details {
+      font-size: 1em;
+      color: #555;
+    }
+
+    .job-logo {
+      height: 60px;
+      margin-left: 20px;
+    }
+
+    .cta-button {
+      display: block;
+      width: 200px;
+      margin: 20px auto;
+      padding: 10px;
+      text-align: center;
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .footer {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .footer a {
+      color: white;
+      text-decoration: none;
+      margin: 0 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h3>Thông báo việc làm</h3>
+  </div>
+  <div class="content">
+    <p>Xin chào {{receiver}},</p>
+    <p>Dựa trên cài đặt thông báo việc làm của bạn, <strong>DevJob</strong> đã tìm thấy <strong>{{countJobs}}</strong>
+      việc làm mới phù hợp với bạn:</p>
+
+    {{#each jobs}}
+    <div class="job-card">
+      <div class="job-info">
+        <p class="job-title">{{this.name}}</p>
+        <p class="company-name">{{this.company}}</p>
+        <p class="job-details">{{this.salary}} VNĐ • {{this.location}}</p>
+        <p class="job-details">{{this.skills}}</p>
+      </div>
+      <img src="{{this.logo}}" alt="{{this.company}} Logo" class="job-logo">
+    </div>
+    {{/each}}
+
+    <a href="https://example.com/job" class="cta-button">Xem tất cả việc làm</a>
+  </div>
+  <div class="footer">
+    <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+    <a href="https://example.com/unsubscribe">Hủy đăng ký</a> |
+    <a href="https://example.com/manage">Quản lý nhận thông báo</a> |
+    <a href="https://example.com/help">Trợ giúp</a>
+  </div>
+</body>
+
+</html>
