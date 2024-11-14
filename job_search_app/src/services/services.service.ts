@@ -6,6 +6,7 @@ import { Service, ServiceDocument } from './schemas/service.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/users.interface';
 import { Model } from 'mongoose';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class ServicesService {
@@ -22,11 +23,37 @@ export class ServicesService {
     });
   }
 
-  async getAllService() {
-    return await this.serviceModel
-      .find()
-      .select('name description price durationDays isActive') // Chỉ chọn các trường cần thiết
+  async getAllService(currentPage: number, limit: number, qr: string) {
+
+    const { filter, sort, population, projection } = aqp(qr);
+
+    delete filter.page;
+    delete filter.pageSize;
+
+    const skip = (currentPage - 1) * limit;
+    const defaultLimit = limit || 10;
+
+    const totalItems = await this.serviceModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.serviceModel
+      .find(filter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 })
+      .populate(population)
+      .select('name description price durationDays isActive createdAt')
       .exec();
+
+    return {
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
   }
 
   getServiceDetail(id: string) {

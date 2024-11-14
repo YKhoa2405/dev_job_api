@@ -15,6 +15,7 @@ export class SkillsController {
   }
 
   @Get()
+  @Public()
   findAll() {
     return this.skillsService.getAllSkill();
   }

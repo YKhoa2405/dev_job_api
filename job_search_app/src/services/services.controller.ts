@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { User } from 'src/common/decorator/customize';
+import { Public, User } from 'src/common/decorator/customize';
 import { IUser } from 'src/users/users.interface';
 
+@Public()
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) { }
@@ -17,8 +18,12 @@ export class ServicesController {
   }
 
   @Get()
-  findAll() {
-    return this.servicesService.getAllService();
+  findAll(
+    @Query("page") currentPage: string,
+    @Query("pageSize") limit: string,
+    @Query() qr: string,
+  ) {
+    return this.servicesService.getAllService(+currentPage, +limit, qr);
   }
 
   @Get(':id')

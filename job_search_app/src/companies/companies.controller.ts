@@ -7,6 +7,7 @@ import { IUser } from 'src/users/users.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from 'src/files/files.service';
 
+@Public()
 @Controller('companies')
 export class CompaniesController {
   constructor(
@@ -18,6 +19,15 @@ export class CompaniesController {
   @Post()
   create(@Body() createCompanyDto: CreateCompanyDto, @User() user: IUser) {
     return this.companiesService.createCompany(createCompanyDto, user);
+  }
+
+  @Get()
+  findAll(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string
+  ) {
+    return this.companiesService.getAllCompany(+currentPage, +limit, qr);
   }
 
   @Public()
@@ -43,13 +53,7 @@ export class CompaniesController {
   };
 
 
-  @Get()
-  findCompanyByCityAndName(
-    @Query("page") currentPage: string,
-    @Query() qr: string
-  ) {
-    return this.companiesService.getCompanyByCityAndName(+currentPage, qr);
-  }
+
 
 
 }

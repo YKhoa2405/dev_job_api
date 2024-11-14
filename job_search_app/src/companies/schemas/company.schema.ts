@@ -44,7 +44,7 @@ export class Company {
   @Prop()
   about: string
 
-  @Prop()
+  @Prop({ default: false })
   @IsBoolean()
   isApproved: boolean
 

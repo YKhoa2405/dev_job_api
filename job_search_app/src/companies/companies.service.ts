@@ -60,33 +60,38 @@ export class CompaniesService {
   }
 
 
-  async getAllCompany(currentPage: number, qr: string) {
+  async getAllCompany(currentPage: number, limit: number, qr: string) {
     // Sử dụng aqp để phân tích chuỗi query
     const { filter, sort, population } = aqp(qr);
     delete filter.page
+    delete filter.limit
+    console.log(qr)
+    console.log(filter)
 
-    const limit = 10
+
+
     // Tính toán số lượng bản ghi cần bỏ qua dựa trên trang hiện tại và số phần tử mỗi trang
     const skip = (+currentPage - 1) * +limit;
     // Số phần tử của 1 trang
-    const defaultLimit = +limit ? +limit : 10
+    const defaultLimit = +limit ? +limit : 2
 
     // Tổng số phần tử
     const totalItems = (await this.companyModel.find(filter)).length
     // Tính toán tổng số trang
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
 
 
     const result = await this.companyModel.find(filter).
       skip(skip).
       limit(defaultLimit).
-      sort().
+      sort({ createdAt: -1 }).
       populate(population).
       exec()
 
     return {
       meta: {
         currentPage: currentPage,
+        pageSize: defaultLimit,
         totalItems: totalItems,
         totalPages: totalPages
       }, result
@@ -101,44 +106,6 @@ export class CompaniesService {
 
   }
 
-  async getCompanyByCityAndName(currentPage: number, qr: string) {
-    // Sử dụng aqp để phân tích chuỗi query
-    const { filter, sort, population } = aqp(qr);
-    delete filter.page
-
-    filter.isDeleted = false;
-    if (filter.city) {
-      filter.city = filter.city; // Thêm vào filter để tìm kiếm theo thành phố
-    }
-
-    if (filter.name) {
-      filter.name = { $regex: filter.name, $options: 'i' }; // Regex để tìm kiếm không phân biệt hoa/thường
-    }
-
-    const limit = 10;
-    const skip = (currentPage - 1) * limit;
-    const defaultLimit = limit;
-
-    const totalItems = await this.companyModel.countDocuments(filter);
-    const totalPages = Math.ceil(totalItems / limit);
-
-
-    const result = await this.companyModel.find(filter)
-      .skip(skip)
-      .limit(defaultLimit)
-      .sort()
-      .populate(population)
-      .exec();
-
-    return {
-      meta: {
-        currentPage,
-        totalItems,
-        totalPages,
-      },
-      result,
-    }
-  }
 
 
 }

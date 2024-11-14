@@ -13,6 +13,12 @@ async function bootstrap() {
     AppModule,
   );
 
+  app.enableCors({
+    origin: 'http://localhost:8000', // Cho phép chỉ một domain (thay localhost:8000 bằng domain thực tế nếu cần)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Các phương thức HTTP được phép
+    credentials: true, // Cho phép gửi cookie nếu cần
+  });
+
   app.useStaticAssets(join(__dirname, '..', 'public')); // js, css, javascript
   app.setBaseViewsDir(join(__dirname, '..', 'views')); // html view
   app.setViewEngine('ejs');
