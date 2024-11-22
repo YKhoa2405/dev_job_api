@@ -4,6 +4,7 @@ import { UpdateSkillDto } from './dto/update-skill.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Skill, SkillDocument } from './schemas/skill.schema';
 import { Model } from 'mongoose';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class SkillsService {
@@ -13,8 +14,33 @@ export class SkillsService {
     return this.skillModel.create({ ...createSkillDto })
   }
 
-  getAllSkill() {
-    return this.skillModel.find().sort({ name: 1 }).exec();
+  async getAllSkill(currentPage: number, limit: number, qr: string) {
+    const { filter, sort, population, projection } = aqp(qr);
+    delete filter.page;
+    delete filter.pageSize;
+
+    const skip = (currentPage - 1) * limit;
+    const defaultLimit = limit ? limit : 10
+
+    const totalItems = await this.skillModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.skillModel
+      .find(filter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .exec();
+
+    return {
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
   }
 
 

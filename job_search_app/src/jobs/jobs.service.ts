@@ -83,6 +83,41 @@ export class JobsService {
     return this.jobModel.findByIdAndDelete(id).exec();
   }
 
+  async getAllJob(currentPage: number, limit: number, qr: string) {
+    const { filter, sort, population, projection } = aqp(qr);
+    delete filter.page;
+    delete filter.pageSize;
+
+    const skip = (currentPage - 1) * limit;
+    const defaultLimit = limit ? limit : 10
+
+    const totalItems = await this.jobModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.jobModel
+      .find(filter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .populate({
+        path: 'companyId',  // Populate companyId to get the company name
+        select: 'name',      // Only select the name of the company
+      })
+      .select('name quantity salary level isActive createdAt')  // Select only required fields
+      .exec();
+
+
+    return {
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
+  }
+
   async getJobByCompany(companyId: string, currentPage: number, limit: number, qr: string) {
 
     const skip = (currentPage - 1) * limit;

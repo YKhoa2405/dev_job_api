@@ -29,9 +29,8 @@ export class ApplicationsController {
   @Get()
   findAll(
     @Query("page") currentPage: string,
-    @Query("pageSize") limit: string,
+    @Query("limit") limit: string,
     @Query() qr: string,
-
   ) {
     return this.applicationsService.getAllApplication(+currentPage, +limit, qr);
   }

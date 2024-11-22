@@ -41,6 +41,23 @@ export class UsersService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
+  async createUser(createUserDto: CreateUserDto) {
+    const { email, name, password, role } = createUserDto;
+    const isExits = await this.userModel.findOne({ email });
+    if (isExits) {
+      throw new BadRequestException('Người dùng đã tồn tại');
+    }
+    const hashPassword = this.getHashPassword(password)
+
+    await this.userModel.create({
+      email,
+      name,
+      password: hashPassword,
+      role
+    });
+
+    return { message: 'Đăng ký thành công.' };
+  }
 
   async registerUser(createUserDto: CreateUserDto) {
     const { email, name } = createUserDto;
@@ -48,6 +65,7 @@ export class UsersService {
     if (isExits) {
       throw new BadRequestException('Người dùng đã tồn tại');
     }
+
 
     // Tạo mã xác minh và lưu vào Map
     const code = this.generatecode();
@@ -111,7 +129,7 @@ export class UsersService {
   }
 
   // Thay đổi mật khẩu
-  async changePasswordWithCode(email:string, newPassword: string, code: string): Promise<any> {
+  async changePasswordWithCode(email: string, newPassword: string, code: string): Promise<any> {
     // const { email } = createUserDto
 
     const storedCode = this.codes.get(email);
@@ -181,31 +199,31 @@ export class UsersService {
 
   async getAllUser(currentPage: number, limit: number, qr: string) {
 
-    const { filter, sort, population } = aqp(qr);
+    const { filter, sort, population, projection } = aqp(qr);
     delete filter.page
     delete filter.pageSize
 
     const skip = (+currentPage - 1) * +limit;
     const defaultLimit = +limit ? +limit : 10
 
-    const totalItems = (await this.userModel.find(filter)).length
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalItems = await this.userModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
 
     const result = await this.userModel.find(filter).
       skip(skip).
       limit(defaultLimit).
       sort({ createdAt: -1 }).
-      populate(population).
+      populate('role', 'name').
       exec()
 
     return {
-      meata: {
-        currentPage: currentPage,
-        pageSize: limit,
-        totalItems: totalItems,
-        totalPages: totalPages
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
       },
-      result
+      result,
     };
   }
 

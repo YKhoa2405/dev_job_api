@@ -28,13 +28,13 @@ export class ApplicationsService {
 
   async getAllApplication(currentPage: number, limit: number, qr: string) {
     const { filter, sort, population, projection } = aqp(qr)
-    delete filter.currentPage
+    delete filter.page
     delete filter.limit
 
-    const skip = (currentPage - 1) * limit;
-    const defaultLimit = limit ? limit : 10
+    const skip = (+currentPage - 1) * +limit;
+    const defaultLimit = +limit ? +limit : 10
 
-    const totalItems = (await this.applycationModel.find()).length;
+    const totalItems = (await this.applycationModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit)
 
 
@@ -50,20 +50,19 @@ export class ApplicationsService {
         },
         {
           path: 'companyId',
-          select: 'name avatar slogan',
+          select: 'name avatar',
         },
       ])
       .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
       .exec();
 
     return {
-      meata: {
+      meta: {
         currentPage: currentPage,
-        pageSize: limit,
+        pageSize: defaultLimit,
         totalItems: totalItems,
         totalPages: totalPages
-      },
-      result
+      }, result
     }
   }
 
@@ -88,11 +87,11 @@ export class ApplicationsService {
     return this.applycationModel.findOne({ _id: id }).populate([
       {
         path: 'jobId',
-        select: 'name salary level',
+        select: 'name',
       },
       {
         path: 'companyId',
-        select: 'name avatar slogan',
+        select: 'name',
       },
     ])
       .exec();;

@@ -5,15 +5,14 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { Public, User } from 'src/common/decorator/customize';
 import { IUser } from 'src/users/users.interface';
 
-@Public()
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) { }
 
   @Post()
   create(
-    @Body() createServiceDto: CreateServiceDto,
-    @User() user: IUser) {
+    @Body() createServiceDto: CreateServiceDto, @User() user:IUser) {
+    console.log(user)
     return this.servicesService.createService(createServiceDto, user);
   }
 

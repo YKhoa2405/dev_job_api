@@ -18,7 +18,7 @@ export class CreateServiceDto {
   price: number;
 
   // Thời gian sử dụng dịch vụ, tính theo ngày (không bắt buộc)
-  @IsString()
+  @IsNumber()
   @IsOptional()
   durationDays?: string;
 

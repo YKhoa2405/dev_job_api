@@ -4,7 +4,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 
 import { IUser } from 'src/users/users.interface';
-import { User } from 'src/common/decorator/customize';
+import { Public, User } from 'src/common/decorator/customize';
 import { JobLevel, JobType } from './schemas/job.schema';
 
 @Controller('jobs')
@@ -16,14 +16,13 @@ export class JobsController {
     return this.jobsService.createJob(createJobDto, user);
   }
 
-  @Get('search') // Đường dẫn riêng cho tìm kiếm
-  async search(
-    @Query('name') name?: string,
-    @Query('level') level?: JobLevel,
-    @Query('city') city?: string,
-    @Query('jobType') jobType?: JobType
+  @Get()
+  findAll(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
   ) {
-    return this.jobsService.getJobSearch(name, level, city, jobType);
+    return this.jobsService.getAllJob(+currentPage, +limit, qr);
   }
 
   @Get('nearby')

@@ -7,27 +7,31 @@ import { IUser } from 'src/users/users.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from 'src/files/files.service';
 
-@Public()
 @Controller('companies')
 export class CompaniesController {
   constructor(
     private readonly companiesService: CompaniesService,
     private readonly filesService: FilesService
-
   ) { }
 
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto, @User() user: IUser) {
-    return this.companiesService.createCompany(createCompanyDto, user);
+  @UseInterceptors(FileInterceptor('avatar'))
+  async create(
+    @Body() createCompanyDto: CreateCompanyDto,
+    @User() user: IUser,
+    @UploadedFile() file?: Express.Multer.File) {
+    const avatar = file ? await this.filesService.uploadFile(file) : undefined;
+    return this.companiesService.createCompany(createCompanyDto, user, avatar);
   }
 
   @Get()
+  @Public()
   findAll(
     @Query("page") currentPage: string,
     @Query("limit") limit: string,
-    @Query() qr: string
+    @Query() qs: string
   ) {
-    return this.companiesService.getAllCompany(+currentPage, +limit, qr);
+    return this.companiesService.getAllCompany(+currentPage, +limit, qs);
   }
 
   @Public()

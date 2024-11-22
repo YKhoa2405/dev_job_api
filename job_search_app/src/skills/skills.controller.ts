@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
@@ -15,9 +15,12 @@ export class SkillsController {
   }
 
   @Get()
-  @Public()
-  findAll() {
-    return this.skillsService.getAllSkill();
+  findAll(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
+  ) {
+    return this.skillsService.getAllSkill(+currentPage, +limit, qr);
   }
 
 

@@ -45,7 +45,6 @@ export class RolesService {
       .select(projection as any)
       .exec();
   
-    console.log("Result:", result);
   
     return {
       meta: {

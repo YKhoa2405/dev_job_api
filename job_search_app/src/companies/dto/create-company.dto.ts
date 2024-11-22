@@ -1,4 +1,4 @@
-import { IsString, IsUrl, IsInt } from 'class-validator';
+import { IsString, IsUrl, IsInt, IsOptional } from 'class-validator';
 
 export class CreateCompanyDto {
   @IsString()
@@ -13,7 +13,7 @@ export class CreateCompanyDto {
   @IsString()
   city: string;
 
-  @IsString()
+  @IsOptional()
   avatar: string
 
   @IsUrl()

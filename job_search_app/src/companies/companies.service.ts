@@ -6,15 +6,18 @@ import { Company, CompanyDocument } from './schemas/company.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/users.interface';
 import aqp from 'api-query-params';
+import { Job, JobDocument } from 'src/jobs/schemas/job.schema';
 
 @Injectable()
 export class CompaniesService {
 
   constructor(
-    @InjectModel(Company.name) private companyModel: SoftDeleteModel<CompanyDocument>
+    @InjectModel(Company.name) private companyModel: SoftDeleteModel<CompanyDocument>,
+    @InjectModel(Job.name) private jobModel: SoftDeleteModel<JobDocument>
+
   ) { }
 
-  async createCompany(createCompanyDto: CreateCompanyDto, user: IUser) {
+  async createCompany(createCompanyDto: CreateCompanyDto, user: IUser, avatar?: string) {
     const { name, website } = createCompanyDto;
 
     // Kiểm tra tên công ty hoặc website đã tồn tại hay chưa
@@ -27,6 +30,7 @@ export class CompaniesService {
     }
     return this.companyModel.create({
       ...createCompanyDto,
+      avatar: avatar,
       createBy: {
         _id: user._id,
         email: user.email
@@ -50,34 +54,28 @@ export class CompaniesService {
   }
 
   async removeCompany(id: string, user: IUser) {
+    await this.jobModel.deleteMany({ companyId: id });
+
     await this.companyModel.updateOne({ _id: id }, {
       deleteBy: {
         _id: user._id,
         email: user.email
-      }
+      } 
     })
     return this.companyModel.softDelete({ _id: id });
   }
 
 
-  async getAllCompany(currentPage: number, limit: number, qr: string) {
-    // Sử dụng aqp để phân tích chuỗi query
-    const { filter, sort, population } = aqp(qr);
+  async getAllCompany(currentPage: number, limit: number, qs: string) {
+    const { filter, sort, population } = aqp(qs);
     delete filter.page
     delete filter.limit
-    console.log(qr)
-    console.log(filter)
 
-
-
-    // Tính toán số lượng bản ghi cần bỏ qua dựa trên trang hiện tại và số phần tử mỗi trang
     const skip = (+currentPage - 1) * +limit;
-    // Số phần tử của 1 trang
-    const defaultLimit = +limit ? +limit : 2
+    const defaultLimit = +limit ? +limit : 10
 
     // Tổng số phần tử
     const totalItems = (await this.companyModel.find(filter)).length
-    // Tính toán tổng số trang
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
 

@@ -14,6 +14,9 @@ export class ServicesService {
 
 
   createService(createServiceDto: CreateServiceDto, user: IUser) {
+    if (!user || !user._id) {
+      throw new Error('User information is incomplete or missing');
+    }
     return this.serviceModel.create({
       ...createServiceDto,
       createBy: {

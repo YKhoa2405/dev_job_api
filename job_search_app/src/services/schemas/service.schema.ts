@@ -15,7 +15,7 @@ export class Service {
     price: number;
 
     @Prop()
-    durationDays: string;
+    durationDays: number;
 
     @Prop()
     isActive: boolean;

@@ -15,10 +15,18 @@ export class UsersController {
 
   @Post('register')
   @Public()
-  create(
+  register(
     @Body() createUserDto: CreateUserDto,
   ) {
     return this.usersService.registerUser(createUserDto);
+  }
+
+  @Post()
+  @Public()
+  create(
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    return this.usersService.createUser(createUserDto);
   }
 
   @Public()
@@ -36,8 +44,8 @@ export class UsersController {
 
   @Public()
   @Post('changePassword')
-  async changePassword(@Body() body: { email:string, code: string, newPassword: string }) {
-    return this.usersService.changePasswordWithCode(body.email,body.newPassword, body.code );
+  async changePassword(@Body() body: { email: string, code: string, newPassword: string }) {
+    return this.usersService.changePasswordWithCode(body.email, body.newPassword, body.code);
   }
 
 
@@ -45,7 +53,7 @@ export class UsersController {
   @Get('/allUser')
   findAllUser(
     @Query("page") currentPage: string,
-    @Query("pageSize") limit: string,
+    @Query("limit") limit: string,
     @Query() qr: string,
   ) {
     return this.usersService.getAllUser(+currentPage, +limit, qr);

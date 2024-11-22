@@ -10,11 +10,13 @@ export class CreateUserDto {
 
     @IsString()
     @IsOptional()
-    avatar: string
+    avatar?: string
 
     @IsOptional()
     name: string
 
     // @IsMongoId({ message: 'role phai la id' })
+    @IsString()
+    @IsNotEmpty()
     role: string
 }
