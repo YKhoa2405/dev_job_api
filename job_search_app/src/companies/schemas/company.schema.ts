@@ -39,16 +39,14 @@ export class Company {
   followers: number
 
   @Prop()
-  size: number
+  size: string
 
   @Prop()
   about: string
 
-  @Prop({ default: false })
-  @IsBoolean()
+  @Prop({ default: true })
   isApproved: boolean
 
-  // Thêm sửa xóa bởi ai
   @Prop({ type: Object })
   createBy: {
     _id: mongoose.Schema.Types.ObjectId

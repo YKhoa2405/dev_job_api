@@ -38,12 +38,12 @@ export class CompaniesService {
     })
   }
 
-  updateCompany(updateCompanyDto: UpdateCompanyDto, user: IUser, avatar?: string) {
+  updateCompany(id: string, updateCompanyDto: UpdateCompanyDto, user: IUser, avatar?: string) {
     if (avatar) {
-      updateCompanyDto.avatar = avatar; // Chỉ cập nhật nếu avatar có giá trị
+      updateCompanyDto.avatar = avatar;
     }
     return this.companyModel.updateOne(
-      { _id: updateCompanyDto._id },
+      { _id: id },
       {
         ...updateCompanyDto,
         updateBy: {
@@ -60,7 +60,7 @@ export class CompaniesService {
       deleteBy: {
         _id: user._id,
         email: user.email
-      } 
+      }
     })
     return this.companyModel.softDelete({ _id: id });
   }

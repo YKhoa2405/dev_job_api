@@ -18,10 +18,6 @@ export class Application {
     @Prop()
     userId:mongoose.Schema.Types.ObjectId
 
-    // @Prop()
-    // jobId: mongoose.Schema.Types.ObjectId;
-    // @Prop()
-    // companyId:mongoose.Schema.Types.ObjectId
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Job' })
     jobId: Job;

@@ -28,29 +28,29 @@ export class PermissionService {
 
   async getAllPermisstion(currentPage: number, limit: number, qr: string) {
     const { filter, sort, population, projection } = aqp(qr)
-    delete filter.currentPage
-    delete filter.limit
+    delete filter.page;
+    delete filter.pageSize;
 
     const skip = (currentPage - 1) * limit;
     const defaultLimit = limit ? limit : 10
 
-    const totalItems = (await this.permissionModel.find()).length;
-    const totalPages = Math.ceil(totalItems / defaultLimit)
+    const totalItems = await this.permissionModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
 
 
-    const result = await this.permissionModel.find(filter)
+    const result = await this.permissionModel
+      .find(filter)
       .skip(skip)
       .limit(defaultLimit)
       .sort(sort as any)
       .populate(population)
-      .select(projection)
       .exec();
     return {
-      meata: {
-        currentPage: currentPage,
-        pageSize: limit,
-        totalItems: totalItems,
-        totalPages: totalPages
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
       },
       result
     }

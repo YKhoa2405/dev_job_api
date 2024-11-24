@@ -29,43 +29,12 @@ export class JobsService {
   }
 
   getJobDetail(id: string) {
-    return this.jobModel.findOne({ _id: id }).exec();
+    return this.jobModel
+      .findOne({ _id: id })
+      .populate('companyId', 'name') // Lấy thông tin 'name' từ model Company
+      .exec();
   }
 
-  async getJobSearch(
-    name?: string,
-    level?: JobLevel,
-    city?: string,
-    jobType?: JobType,
-    currentPage: number = 1,
-  ) {
-    const filter: any = {};
-
-    if (name) {
-      filter.name = { $regex: name, $options: 'i' }; // Tìm kiếm không phân biệt chữ hoa chữ thường
-    }
-
-    if (level) {
-      filter.level = level; // Thêm điều kiện tìm kiếm cho cấp bậc
-    }
-
-    if (city) {
-      filter.city = city; // Thêm điều kiện tìm kiếm cho thành phố
-    }
-
-    if (jobType) {
-      filter.jobType = jobType; // Thêm điều kiện tìm kiếm cho loại hình công việc
-    }
-
-    const results = await this.jobModel.find(filter).exec();
-
-    // Kiểm tra xem có kết quả không
-    if (results.length === 0) {
-      return { message: 'Không tìm thấy công việc phù hợp với tiêu chí tìm kiếm của bạn.' };
-    }
-
-    return results; // Trả về kết quả tìm kiếm
-  }
 
   updateJob(id: string, updateJobDto: UpdateJobDto, user: IUser) {
     return this.jobModel.updateOne({ _id: id },

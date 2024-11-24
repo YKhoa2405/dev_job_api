@@ -1,4 +1,4 @@
-import { IsString, IsUrl, IsInt, IsOptional } from 'class-validator';
+import { IsString, IsUrl, IsInt, IsOptional, IsBoolean, IsNumber } from 'class-validator';
 
 export class CreateCompanyDto {
   @IsString()
@@ -27,4 +27,8 @@ export class CreateCompanyDto {
 
   @IsString()
   about: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isApproved?: boolean = false;
 }

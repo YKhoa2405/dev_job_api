@@ -46,8 +46,8 @@ export class ApplicationsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateApplicationDto: UpdateApplicationDto, @User() user: IUser) {
-    return this.applicationsService.updateApplication(id, updateApplicationDto, user);
+  update(@Param('id') id: string, @Body('status') status: string, @User() user: IUser) {
+    return this.applicationsService.updateApplication(id, status, user);
   }
 
   @Delete(':id')

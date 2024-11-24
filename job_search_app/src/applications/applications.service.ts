@@ -97,9 +97,9 @@ export class ApplicationsService {
       .exec();;
   }
 
-  updateApplication(id: string, updateApplicationDto: UpdateApplicationDto, user: IUser) {
+  updateApplication(id: string, status: string, user: IUser) {
     return this.applycationModel.updateOne({ _id: id }, {
-      ...updateApplicationDto,
+      status: status,
       updateBy: {
         _id: user._id,
         email: user.email

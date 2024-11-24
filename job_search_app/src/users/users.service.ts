@@ -203,13 +203,14 @@ export class UsersService {
     delete filter.page
     delete filter.pageSize
 
-    const skip = (+currentPage - 1) * +limit;
-    const defaultLimit = +limit ? +limit : 10
+    const skip = (currentPage - 1) * limit;
+    const defaultLimit = limit ? limit : 10
 
     const totalItems = await this.userModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.userModel.find(filter).
+    const result = await this.userModel
+      .find(filter).
       skip(skip).
       limit(defaultLimit).
       sort({ createdAt: -1 }).

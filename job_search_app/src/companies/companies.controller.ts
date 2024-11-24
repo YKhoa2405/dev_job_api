@@ -40,15 +40,16 @@ export class CompaniesController {
     return this.companiesService.getCompanyDetail(id);
   }
 
-  @Patch()
+  @Patch(':id')
   @UseInterceptors(FileInterceptor('avatar'))
   async update(
     @Body() updateCompanyDto: UpdateCompanyDto,
+    @Param('id') id: string,
     @User() user: IUser,
     @UploadedFile() file?: Express.Multer.File,) {
     const avatar = file ? await this.filesService.uploadFile(file) : undefined;
     console.log(avatar)
-    return this.companiesService.updateCompany(updateCompanyDto, user, avatar);
+    return this.companiesService.updateCompany(id,updateCompanyDto, user, avatar);
   }
 
   @Delete(':id')
