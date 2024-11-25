@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -10,7 +10,12 @@ import aqp from 'api-query-params';
 export class SkillsService {
   constructor(@InjectModel(Skill.name) private skillModel: Model<SkillDocument>) { }
 
-  createSkill(createSkillDto: CreateSkillDto) {
+  async createSkill(createSkillDto: CreateSkillDto) {
+    const { name } = createSkillDto
+    const isExits = await this.skillModel.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+    if (isExits) {
+      throw new BadRequestException('Công nghệ đã tồn tại');
+    }
     return this.skillModel.create({ ...createSkillDto })
   }
 

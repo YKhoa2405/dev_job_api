@@ -12,8 +12,8 @@ export class PermissionService {
   constructor(@InjectModel(Permission.name) private permissionModel: SoftDeleteModel<PermissionDocument>) { }
 
   async createPermission(createPermissionDto: CreatePermissionDto, user: IUser) {
-    const { apiPath, method, isDeleted } = createPermissionDto;
-    const checkPermission = await this.permissionModel.findOne({ apiPath, method, isDeleted: false })
+    const { apiPath, method, isDeleted, name } = createPermissionDto;
+    const checkPermission = await this.permissionModel.findOne({ apiPath, method, isDeleted: false, name })
     if (checkPermission) {
       throw new BadRequestException('Permission with the same apiPath and method already exists');
     }
