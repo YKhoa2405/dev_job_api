@@ -7,12 +7,16 @@ import { User } from 'src/users/schemas/user.schema';
 import { IUser } from 'src/users/users.interface';
 import { Model } from 'mongoose';
 import aqp from 'api-query-params';
+import { Skill } from 'src/skills/schemas/skill.schema';
 
 @Injectable()
 export class JobsService {
-  constructor(@InjectModel(Job.name) private jobModel: Model<JobDocument>) { }
+  constructor(
+    @InjectModel(Job.name) private jobModel: Model<JobDocument>,
+    @InjectModel(Skill.name) private skillModel: Model<Skill>,
+  ) { }
 
-  createJob(createJobDto: CreateJobDto, user: IUser) {
+  async createJob(createJobDto: CreateJobDto, user: IUser) {
     let newJob = this.jobModel.create({
       ...createJobDto,
       createBy: {
@@ -20,6 +24,14 @@ export class JobsService {
         email: user.email,
       },
     });
+
+    const skillNames = createJobDto.skills; // Mảng tên kỹ năng từ frontend
+
+    // Step 1: Cập nhật popularity dựa trên name
+    await this.skillModel.updateMany(
+      { name: { $in: skillNames } }, // Tìm các kỹ năng theo name
+      { $inc: { popularity: 1 } }   // Tăng popularity
+    );
     return newJob;
   }
 
@@ -99,13 +111,14 @@ export class JobsService {
       .find({ companyId })
       .skip(skip)
       .limit(defaultLimit)
-      .populate('companyId', 'name slogan avatar')
+      // .populate('companyId', 'name slogan avatar')
+      // .populate('companyId', 'name slogan avatar')
       .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude')
       .exec();
 
 
     return {
-      meata: {
+      meta: {
         currentPage: currentPage,
         pageSize: limit,
         totalItems: totalItems,

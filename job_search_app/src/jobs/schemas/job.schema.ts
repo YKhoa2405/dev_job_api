@@ -51,9 +51,9 @@ export class Job {
     @Prop()
     location: string;
 
-    @Prop({ enum: JobType }) // Thêm trường jobType với enum
-    @IsEnum(JobType) // Xác nhận rằng giá trị của trường này là một trong những giá trị đã định nghĩa
-    jobType: JobType; // Hoặc bạn có thể dùng string nếu không dùng enum
+    @Prop({ enum: JobType })
+    @IsEnum(JobType)
+    jobType: JobType;
 
     @Prop()
     city: string;
