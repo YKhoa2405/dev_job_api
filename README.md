@@ -5,8 +5,8 @@ Khóa luận tốt nghiệp đề tài phát triển hệ thống hỗ trợ tì
 
 ## Giới Thiệu
 
-Xây dựng  Restful API sử dụng framework NestJS
-Lưu trữ dự liệu bằng MongoDB
+Xây dựng  Restful API sử dụng framework NestJS.
+Lưu trữ dự liệu bằng MongoDB.
 
 
 ## Clone Dự Án
