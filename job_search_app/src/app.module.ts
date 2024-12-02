@@ -21,6 +21,7 @@ import { RolesModule } from './roles/roles.module';
 import { SubscribersModule } from './subscribers/subscribers.module';
 import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CvModule } from './cv/cv.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     RolesModule,
     SubscribersModule,
     MailModule,
+    CvModule,
   ],
   controllers: [AppController],
   providers: [AppService,

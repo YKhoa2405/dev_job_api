@@ -37,7 +37,6 @@ export class Application {
     @Prop({ required: true })
     cv: string;
 
-
     @Prop({ type: Object })
     createBy: {
         _id: mongoose.Schema.Types.ObjectId,

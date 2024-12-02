@@ -47,8 +47,7 @@ export class SkillsService {
       result,
     };
   }
-
-
+ 
   updateSkill(id: string, updateSkillDto: UpdateSkillDto) {
     return this.skillModel.updateOne({ _id: id }, { ...updateSkillDto })
   }
