@@ -25,6 +25,7 @@ export class JobsController {
     return this.jobsService.getAllJob(+currentPage, +limit, qr);
   }
 
+  @Public()
   @Get('nearby')
   async findJobNearby(
     @Query('latitude') latitude: string,

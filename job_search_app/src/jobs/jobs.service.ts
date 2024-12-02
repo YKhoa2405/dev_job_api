@@ -132,7 +132,7 @@ export class JobsService {
   async getJobNearby(latitude: number, longitude: number, radius: number) {
     const radiusInDegrees = radius / 111.32;
 
-    const jobs = await this.jobModel.find({
+    const result = await this.jobModel.find({
       isActive: true,
       latitude: {
         $gte: latitude - radiusInDegrees,
@@ -148,17 +148,19 @@ export class JobsService {
         path: 'companyId',
         select: 'name avatar slogan',
       })
-      .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude')
+      .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location')
       .exec();
 
-    const totalJobs = jobs.length;
+    const totalJobs = result.length;
 
     return {
       meta: {
         totalJobs: totalJobs
       },
-      jobs
+      result
     };
   }
+
+
 
 }

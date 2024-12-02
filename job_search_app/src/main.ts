@@ -24,7 +24,7 @@ async function bootstrap() {
   app.setViewEngine('ejs');
 
   app.useGlobalPipes(new ValidationPipe({
-    whitelist:true
+    whitelist: true
   }));
   app.useGlobalInterceptors(new TransformInterceptor());
 
@@ -38,6 +38,7 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, documentFactory);
 
-  await app.listen(3000);
+  // await app.listen(3000);
+  await app.listen(8000, '192.168.1.120');
 }
 bootstrap();

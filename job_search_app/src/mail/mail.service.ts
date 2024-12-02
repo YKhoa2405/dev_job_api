@@ -8,7 +8,7 @@ export class MailService {
   // Gửi email xác minh
   async sendVerificationEmail(to: string, name: string, code: string): Promise<void> {
     await this.mailerService.sendMail({
-      to: 'nguyenykhoa2405@gmail.com',
+      to: to,
       from: '"DevJob" <devjob@gmail.com>', // Sender's email address
       subject: 'Xác minh tài khoản của bạn',
       template: 'sendEmailVerify', // Tên template
@@ -21,7 +21,7 @@ export class MailService {
 
   async sendForgotPassEmail(to: string, code: string): Promise<void> {
     await this.mailerService.sendMail({
-      to: 'nguyenykhoa2405@gmail.com',
+      to: to,
       from: '"DevJob" <devjob@gmail.com>', // Sender's email address
       subject: 'Đặt lại mật khẩu',
       template: 'sendEmailForgotPass', // Tên template

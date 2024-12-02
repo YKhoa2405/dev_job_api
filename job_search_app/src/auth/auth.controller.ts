@@ -25,7 +25,7 @@ export class AuthController {
   @Get('currentUser')
   async getCurrenUser(@User() user: IUser) {
     const temp = await this.rolesService.getRoleDetail(user.role._id) as any
-    user.permisstions = temp.permissions
+    user.permissions = temp.permissions
     return { user }
   }
 
