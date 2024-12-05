@@ -43,7 +43,7 @@ export class JobsService {
   getJobDetail(id: string) {
     return this.jobModel
       .findOne({ _id: id })
-      .populate('companyId', 'name') // Lấy thông tin 'name' từ model Company
+      .populate('companyId', 'name avatar') 
       .exec();
   }
 

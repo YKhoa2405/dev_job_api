@@ -5,8 +5,8 @@ export class CreateCvDto {
     // @IsNotEmpty()
     userId: mongoose.Schema.Types.ObjectId
 
-    // @IsString()
-    // @IsNotEmpty()
+    @IsString()
+    @IsNotEmpty()
     name: string;
 
     // @IsString()
