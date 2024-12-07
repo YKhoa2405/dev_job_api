@@ -24,6 +24,12 @@ export class CompaniesController {
     return this.companiesService.createCompany(createCompanyDto, user, avatar);
   }
 
+  @Get('user')
+  async getCompanyByUserId(@User() user: IUser) {
+    const company = await this.companiesService.getCompanyByUserId(user);
+    return company;
+  }
+
   @Get()
   @Public()
   findAll(
@@ -40,6 +46,7 @@ export class CompaniesController {
     return this.companiesService.getCompanyDetail(id);
   }
 
+
   @Patch(':id')
   @UseInterceptors(FileInterceptor('avatar'))
   async update(
@@ -49,7 +56,7 @@ export class CompaniesController {
     @UploadedFile() file?: Express.Multer.File,) {
     const avatar = file ? await this.filesService.uploadFile(file) : undefined;
     console.log(avatar)
-    return this.companiesService.updateCompany(id,updateCompanyDto, user, avatar);
+    return this.companiesService.updateCompany(id, updateCompanyDto, user, avatar);
   }
 
   @Delete(':id')

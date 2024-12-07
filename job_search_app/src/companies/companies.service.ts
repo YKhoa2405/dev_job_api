@@ -28,9 +28,16 @@ export class CompaniesService {
     if (existingCompany) {
       throw new BadRequestException('Cong ty da ton tai')
     }
+
+    const userCompany = await this.companyModel.findOne({ userId: user._id });
+    if (userCompany) {
+      throw new BadRequestException('Mỗi người dùng chỉ được tạo một công ty');
+    }
+
     return this.companyModel.create({
       ...createCompanyDto,
       avatar: avatar,
+      userId: user._id,
       createBy: {
         _id: user._id,
         email: user.email
@@ -104,6 +111,9 @@ export class CompaniesService {
 
   }
 
+  async getCompanyByUserId(user: IUser) {
+    return await this.companyModel.findOne({ userId: user._id });
+  }
 
 
 }

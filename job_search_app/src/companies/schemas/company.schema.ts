@@ -2,6 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsBoolean, IsInt, IsOptional, IsUrl } from 'class-validator';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { User } from 'src/users/schemas/user.schema';
 
 export type CompanyDocument = HydratedDocument<Company>;
 
@@ -9,6 +10,9 @@ export type CompanyDocument = HydratedDocument<Company>;
 export class Company {
   @Prop({ unique: true })
   name: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  userId: User;
 
   @Prop()
   slogan: string

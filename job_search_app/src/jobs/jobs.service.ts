@@ -43,7 +43,7 @@ export class JobsService {
   getJobDetail(id: string) {
     return this.jobModel
       .findOne({ _id: id })
-      .populate('companyId', 'name avatar') 
+      .populate('companyId', 'name avatar')
       .exec();
   }
 
@@ -79,7 +79,7 @@ export class JobsService {
       .find(filter)
       .skip(skip)
       .limit(defaultLimit)
-      .sort(sort as any)
+      .sort({ createdAt: -1 })
       .populate({
         path: 'companyId',  // Populate companyId to get the company name
         select: 'name',      // Only select the name of the company
@@ -100,34 +100,44 @@ export class JobsService {
   }
 
   async getJobByCompany(companyId: string, currentPage: number, limit: number, qr: string) {
-
-    const skip = (currentPage - 1) * limit;
-    const defaultLimit = limit ? limit : 10
-
-    const totalItems = await this.jobModel.countDocuments({ companyId });
-    const totalPages = Math.ceil(totalItems / limit);
-
+    const { filter, sort } = aqp(qr) as { filter: { [key: string]: any }; sort: any };
+  
+    if ('page' in filter) delete filter.page;
+    if ('pageSize' in filter) delete filter.pageSize;
+    // Kết hợp filter với companyId
+    const combinedFilter = { ...filter, companyId };
+  
+    // Loại bỏ các tham số phân trang không liên quan trong filter
+  
+    // Tính toán phân trang
+    const defaultLimit = limit || 10;
+    const skip = (currentPage - 1) * defaultLimit;
+  
+    // Đếm tổng số mục
+    const totalItems = await this.jobModel.countDocuments(combinedFilter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+  
+    // Truy vấn dữ liệu với filter, phân trang và sắp xếp
     const result = await this.jobModel
-      .find({ companyId })
+      .find(combinedFilter)
       .skip(skip)
       .limit(defaultLimit)
-      // .populate('companyId', 'name slogan avatar')
-      // .populate('companyId', 'name slogan avatar')
-      .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude')
+      .sort({ createdAt: -1 }) // Sắp xếp dựa trên sort từ `aqp` hoặc mặc định
+      .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude') // Lựa chọn trường cần thiết
       .exec();
-
-
+  
+    // Trả về kết quả với meta
     return {
       meta: {
         currentPage: currentPage,
-        pageSize: limit,
+        pageSize: defaultLimit,
         totalItems: totalItems,
-        totalPages: totalPages
+        totalPages: totalPages,
       },
-      result
+      result,
     };
-
-  };
+  }
+  
 
   async getJobNearby(latitude: number, longitude: number, radius: number) {
     const radiusInDegrees = radius / 111.32;
