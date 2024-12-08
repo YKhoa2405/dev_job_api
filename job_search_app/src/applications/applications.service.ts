@@ -66,6 +66,76 @@ export class ApplicationsService {
     }
   }
 
+  async getApplicationByCompany(currentPage: number, limit: number, qr: string, companyId: string) {
+    const { filter, sort, population, projection } = aqp(qr)
+    delete filter.page
+    delete filter.limit
+
+    filter.companyId = companyId;
+
+    const skip = (+currentPage - 1) * +limit;
+    const defaultLimit = +limit ? +limit : 10
+
+    const totalItems = (await this.applycationModel.find(filter)).length;
+    const totalPages = Math.ceil(totalItems / defaultLimit)
+
+
+    const result = await this.applycationModel
+      .find(filter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 })
+      .populate([
+        {
+          path: 'jobId',
+          select: 'name',
+        },
+      ])
+      .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
+      .exec();
+
+    return {
+      meta: {
+        currentPage: currentPage,
+        pageSize: defaultLimit,
+        totalItems: totalItems,
+        totalPages: totalPages
+      }, result
+    }
+  }
+
+  async getApplicationByJob(currentPage: number, limit: number, qr: string, jobId: string) {
+    const { filter, sort, population, projection } = aqp(qr)
+    delete filter.page
+    delete filter.limit
+
+    filter.jobId = jobId;
+
+    const skip = (+currentPage - 1) * +limit;
+    const defaultLimit = +limit ? +limit : 10
+
+    const totalItems = (await this.applycationModel.find(filter)).length;
+    const totalPages = Math.ceil(totalItems / defaultLimit)
+
+
+    const result = await this.applycationModel
+      .find(filter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 })
+      .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
+      .exec();
+
+    return {
+      meta: {
+        currentPage: currentPage,
+        pageSize: defaultLimit,
+        totalItems: totalItems,
+        totalPages: totalPages
+      }, result
+    }
+  }
+
   async getApplicationByUser(user: IUser) {
     return await this.applycationModel
       .find({ userId: user._id })
@@ -83,19 +153,6 @@ export class ApplicationsService {
       .exec();
   }
 
-  getApplicationDetail(id: string) {
-    return this.applycationModel.findOne({ _id: id }).populate([
-      {
-        path: 'jobId',
-        select: 'name',
-      },
-      {
-        path: 'companyId',
-        select: 'name',
-      },
-    ])
-      .exec();;
-  }
 
   updateApplication(id: string, status: string, user: IUser) {
     return this.applycationModel.updateOne({ _id: id }, {

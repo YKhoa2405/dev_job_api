@@ -35,15 +35,32 @@ export class ApplicationsController {
     return this.applicationsService.getAllApplication(+currentPage, +limit, qr);
   }
 
+  @Get('byCompany/:companyId')
+  async findApplicationByCompany(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
+    @Param('companyId') companyId: string) {
+    return await this.applicationsService.getApplicationByCompany(+currentPage, +limit, qr, companyId);
+  }
+
+  @Get('byJob/:jobId')
+  async findApplicationByJob(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
+    @Param('jobId') jobId: string) {
+    return await this.applicationsService.getApplicationByJob(+currentPage, +limit, qr, jobId);
+  }
+
+  
+
+
   @Post('byUser')
   async findApplicationByUser(@User() user: IUser) {
     return await this.applicationsService.getApplicationByUser(user);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.applicationsService.getApplicationDetail(id);
-  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body('status') status: string, @User() user: IUser) {
