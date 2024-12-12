@@ -26,6 +26,12 @@ export class SaveJobController {
     return this.saveJobService.getAllSaveJob(+currentPage, +limit, qr, userId);
   }
 
+  @Delete()
+  removeAll(@User() user: IUser) {
+    const userId = user._id
+    return this.saveJobService.removeAllSaveJob(userId)
+  }
+  
   @Delete(':id')
   async remove(@Param('id') id: string, @User() user: IUser) {
     const userId = user._id
@@ -36,10 +42,5 @@ export class SaveJobController {
     return { message: 'Job deleted successfully', id };
   }
 
-  @Delete()
-  removeAll(@User() user: IUser) {
-    const userId= user._id
-    return this.saveJobService.removeAllSaveJob(userId)
-  }
 
 }

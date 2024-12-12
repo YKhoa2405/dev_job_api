@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin hóa đơn</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="bill-container">
+        <div class="bill-header">
+            <h1>Thanh toán dịch vụ</h1>
+        </div>
+
+        <div class="bill-info">
+            <div class="info-row">
+                <span class="info-label">Mã Giao Dịch:</span>
+                <span class="info-value">
+                    <%= transactionDetails.vnp_TransactionNo %>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày:</span>
+                <span class="info-value">
+                    <%= new Date().toLocaleDateString() %>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Số Tiền:</span>
+                <span class="info-value">
+                    <%= transactionDetails.vnp_Amount %>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Trạng Thái Thanh Toán:</span>
+                <span class="info-value">
+                    <%= message %>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Thông tin đơn hàng:</span>
+                <span class="info-value">
+                    <%= transactionDetails.vnp_OrderInfo %>
+                </span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+        </div>
+    </div>
+</body>
+
+</html>

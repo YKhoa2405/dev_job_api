@@ -3,25 +3,37 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 export type PaymentDocument = HydratedDocument<Payment>;
 
-@Schema() // Tự động thêm createdAt và updatedAt
+@Schema({ timestamps: true }) // Tự động thêm createdAt và updatedAt
 export class Payment {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' }) // Liên kết với model Company
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
     companyId: string;
-
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Service' })
-    serviceId: string;
-
-    @Prop()
-    vnp_BankCode: string
 
     @Prop()
     vnp_Amount: string;
 
     @Prop()
-    vnp_PayDate: string;
+    vnp_BankCode: string
+
+    @Prop()
+    vnp_BankTranNo: string
+
+    @Prop()
+    vnp_CardType: string;
 
     @Prop()
     vnp_OrderInfo: string;
+
+    @Prop()
+    vnp_PayDate: string;
+
+    @Prop()
+    vnp_ResponseCode: string
+
+    @Prop()
+    vnp_TmnCode: string
+
+    @Prop()
+    vnp_TransactionNo: string
 
     @Prop()
     vnp_TransactionStatus: string;

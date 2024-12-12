@@ -1,0 +1,53 @@
+<!-- views/bill.hbs -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa đơn thanh toán</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .bill-container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .header {
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .transaction-info {
+            margin-top: 20px;
+        }
+        .transaction-info p {
+            font-size: 16px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="bill-container">
+        <div class="header">
+            <h1>Hóa đơn thanh toán</h1>
+            <p>{{status}}</p>
+        </div>
+        <div class="transaction-info">
+            <p><strong>Mã giao dịch:</strong> {{vnp_TransactionNo}}</p>
+            <p><strong>Số tiền:</strong> {{vnp_Amount}} VND</p>
+            <p><strong>Thời gian thanh toán:</strong> {{vnp_PayDate}}</p>
+            <p><strong>Thông tin giao dịch:</strong> {{vnp_OrderInfo}}</p>
+        </div>
+        <div class="footer">
+            <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+        </div>
+    </div>
+</body>
+</html>

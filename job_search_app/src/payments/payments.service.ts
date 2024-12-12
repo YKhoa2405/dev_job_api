@@ -24,25 +24,26 @@ export class PaymentsService {
     this.returnUrl = this.configService.get<string>('VNPAY_RETURN_URL');
   }
 
-  createPaymentUrl(orderId: string, amount: number, bankCode?: string): string {
+  createPaymentUrl(orderId: string, amount: number, name: string, bankCode?: string): string {
     const ipAddr = '127.0.0.1';
     const currCode = 'VND';
     const date = new Date();
     const createDate = date.toISOString().replace(/[-:TZ]/g, '').slice(0, 14);
+    console.log(amount)
 
     const vnpParams: { [key: string]: string | number } = {
       vnp_Version: '2.1.0',
       vnp_Command: 'pay',
       vnp_TmnCode: this.tmnCode,
       vnp_Amount: amount * 100,
+      vnp_CreateDate: createDate,
       vnp_CurrCode: currCode,
       vnp_TxnRef: orderId,
-      vnp_OrderInfo: `Thanh toan dich vu: ${orderId}`,
+      vnp_OrderInfo: `Thanh toan dich vu ${name}`,
       vnp_OrderType: 'other',
       vnp_Locale: 'vn',
       vnp_ReturnUrl: this.returnUrl,
       vnp_IpAddr: ipAddr,
-      vnp_CreateDate: createDate,
     };
 
     if (bankCode) {
@@ -89,6 +90,17 @@ export class PaymentsService {
 
     });
     return transaction;
+  }
+
+  async getPaymentByCompany(companyId: string) {
+    const payments = await this.paymentModel
+      .find({ companyId })
+      .populate('serviceId', 'name price durationDays')
+      .exec();
+
+    return {
+      result: payments,
+    };
   }
 
 }
