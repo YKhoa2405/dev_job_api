@@ -40,6 +40,14 @@ export class Payment {
 
     @Prop()
     vnp_TxnRef: string;
+
+    @Prop({ type: Object })
+    createBy: {
+        _id: mongoose.Schema.Types.ObjectId,
+        email: string;
+    }
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
+
+

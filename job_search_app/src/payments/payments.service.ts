@@ -6,6 +6,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Payment, PaymentDocument } from './schemas/payment.schema';
 import { Model } from 'mongoose';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { IUser } from 'src/users/users.interface';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class PaymentsService {
@@ -81,27 +83,56 @@ export class PaymentsService {
   }
 
 
-  async createPayment(createPaymentDto: CreatePaymentDto) {
+  async createPayment(createPaymentDto: CreatePaymentDto, user: IUser) {
     const isTransactionSuccessful = createPaymentDto.vnp_TransactionStatus === '00';
 
     const transaction = this.paymentModel.create({
       ...createPaymentDto,
       vnp_TransactionStatus: isTransactionSuccessful ? 'Success' : 'Failure',
-
+      createBy: {
+        _id: user._id,
+        email: user.email,
+      },
     });
     return transaction;
   }
 
-  async getPaymentByCompany(companyId: string) {
-    const payments = await this.paymentModel
-      .find({ companyId })
-      .populate('serviceId', 'name price durationDays')
+  async getPaymentByCompany(companyId: string, currentPage: number, limit: number, qr: string) {
+    const { filter, sort } = aqp(qr) as { filter: { [key: string]: any }; sort: any };
+
+    if ('page' in filter) delete filter.page;
+    if ('pageSize' in filter) delete filter.pageSize;
+    // Kết hợp filter với companyId
+    const combinedFilter = { ...filter, companyId };
+
+    const defaultLimit = limit || 10;
+    const skip = (currentPage - 1) * defaultLimit;
+
+    // Đếm tổng số mục
+    const totalItems = await this.paymentModel.countDocuments(combinedFilter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    // Truy vấn dữ liệu với filter, phân trang và sắp xếp
+    const result = await this.paymentModel
+      .find(combinedFilter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 }) // Sắp xếp dựa trên sort từ `aqp` hoặc mặc định
+      .select('vnp_Amount vnp_OrderInfo createdAt vnp_PayDate vnp_TransactionNo vnp_TransactionStatus')
       .exec();
 
+    // Trả về kết quả với meta
     return {
-      result: payments,
+      meta: {
+        currentPage: currentPage,
+        pageSize: defaultLimit,
+        totalItems: totalItems,
+        totalPages: totalPages,
+      },
+      result,
     };
   }
+
 
 }
 

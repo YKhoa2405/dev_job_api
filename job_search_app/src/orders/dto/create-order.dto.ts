@@ -9,7 +9,7 @@ export class CreateOrderDto {
     companyId: mongoose.Schema.Types.ObjectId;
 
     @IsString()
-    amount:string
+    amount:number
 
     @IsOptional()
     @IsDateString()
@@ -17,5 +17,5 @@ export class CreateOrderDto {
 
     @IsOptional()
     @IsBoolean()
-    isActive?: boolean;
+    isActive?: boolean = true;
 }

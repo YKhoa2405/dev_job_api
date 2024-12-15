@@ -12,13 +12,19 @@ export class Order {
     serviceId: string;
 
     @Prop()
-    amount: string
+    amount: number
 
     @Prop()
     endDate: Date;
 
     @Prop()
     isActive: boolean
+
+    @Prop({ type: Object })
+    createBy: {
+        _id: mongoose.Schema.Types.ObjectId,
+        email: string;
+    }
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
