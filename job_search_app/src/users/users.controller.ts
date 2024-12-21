@@ -31,8 +31,11 @@ export class UsersController {
 
   @Public()
   @Post('verify')
-  async verify(@Body() createUserDto: CreateUserDto, @Query('code') code: string) {
-    return this.usersService.verifyUser(code, createUserDto);
+  async verify(
+    @Body() createUserDto: CreateUserDto,
+    @Query('roleName') roleName: string,
+    @Query('code') code: string) {
+    return this.usersService.verifyUser(code, createUserDto, roleName);
   }
 
   @Public()

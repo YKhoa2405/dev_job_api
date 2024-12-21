@@ -24,6 +24,15 @@ export class SaveJobService {
     return saveJob.save();
   }
 
+  async checkIfJobIsSaved(jobId: string, userId: string): Promise<boolean> {
+    const savedJob = await this.saveJobModel.findOne({
+      jobId,
+      userId,
+      isActive: true, // Chỉ xét công việc đang được lưu
+    });
+    return savedJob !== null; // Trả về true nếu đã lưu, false nếu chưa
+  }
+
   async getAllSaveJob(currentPage: number, limit: number, qr: string, userId: string) {
     const { filter = {}, sort, population, projection } = aqp(qr);
     delete filter.page;

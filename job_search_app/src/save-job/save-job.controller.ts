@@ -26,12 +26,19 @@ export class SaveJobController {
     return this.saveJobService.getAllSaveJob(+currentPage, +limit, qr, userId);
   }
 
-  @Delete()
+  @Get('check-saved/:jobId')
+  async checkIfSaved(@Param('jobId') jobId: string, @User() user: IUser) {
+    const userId = user._id;
+    const isSaved = await this.saveJobService.checkIfJobIsSaved(jobId, userId);
+    return { isSaved };
+  }
+
+  @Delete('clearAll')
   removeAll(@User() user: IUser) {
     const userId = user._id
     return this.saveJobService.removeAllSaveJob(userId)
   }
-  
+
   @Delete(':id')
   async remove(@Param('id') id: string, @User() user: IUser) {
     const userId = user._id

@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, Query } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { CreateFollowDto } from './dto/create-follow.dto';
 import { UpdateFollowDto } from './dto/update-follow.dto';
+import { User } from 'src/common/decorator/customize';
+import { IUser } from 'src/users/users.interface';
 
 @Controller('follows')
 export class FollowController {
   constructor(private readonly followService: FollowService) { }
 
-  @Post('follow')
+  @Post()
   create(
-    @Request() req,
+    @User() user: IUser,
     @Body('companyId') companyId: string,
   ) {
-    console.log(companyId)
-    return this.followService.followCompany(req.user._id, companyId);
+    const userId = user._id;
+    return this.followService.followCompany(userId, companyId);
   }
 
 
-  @Delete('unfollow')
+  @Delete(':companyId')
   remove(
-    @Request() req,
-    @Body('companyId') companyId: string,) {
-    return this.followService.unFollowCompany(req.user._id, companyId);
+    @User() user: IUser,
+    @Param('companyId') companyId: string,
+  ) {
+    const userId = user._id;
+    console.log(userId);
+    return this.followService.unFollowCompany(userId, companyId);
   }
 
-  @Get('followed')
-  async getFollowedCompanies(
-    @Request() req) {
-    const userId = req.user._id;  // Lấy userId từ token
-    return this.followService.getFollowedCompanies(userId);  // Gọi service để lấy tất cả các công ty
+
+  @Get()
+  findFollowByUser(
+    @User() user: IUser,
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
+  ) {
+    const userId = user._id;
+    return this.followService.getFollowByUser(+currentPage, +limit, qr, userId);
+  }
+
+  @Get(':companyId/isSaved')
+  async isSaved(
+    @User() user: IUser,
+    @Param('companyId') companyId: string,
+  ) {
+    const userId = user._id; // Lấy ID của người dùng hiện tại
+    return this.followService.isCompanySaved(userId, companyId);
   }
 
 }

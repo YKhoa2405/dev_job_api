@@ -66,7 +66,6 @@ export class UsersService {
       throw new BadRequestException('Người dùng đã tồn tại');
     }
 
-
     // Tạo mã xác minh và lưu vào Map
     const code = this.generatecode();
     this.codes.set(email, code);
@@ -81,11 +80,10 @@ export class UsersService {
     return { message: 'Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.' };
   }
 
-  async verifyUser(code: string, createUserDto: CreateUserDto) {
+  async verifyUser(code: string, createUserDto: CreateUserDto, roleName: string) {
     const { email, name, password, avatar, role } = createUserDto
     const storedCode = this.codes.get(email);
-    console.log(createUserDto)
-
+    console.log(role)
     if (!storedCode) {
       throw new BadRequestException('Không tìm thấy mã xác minh cho email này.');
     }
@@ -96,7 +94,7 @@ export class UsersService {
 
     // Nếu mã xác minh đúng, tạo người dùng
 
-    const userRole = await this.roleModel.findOne({ name: 'NORMAL_USER' });
+    const userRole = await this.roleModel.findOne({ name: roleName });
 
     const hashPassword = this.getHashPassword(password)
 
@@ -106,7 +104,7 @@ export class UsersService {
       name,
       password: hashPassword,
       avatar,
-      role: userRole?._id,
+      role: userRole?._id
     });
 
     // Xóa mã khỏi Map sau khi sử dụng

@@ -29,15 +29,15 @@ export class MailController {
   async handleSendMailBySkills() {
     const subscribers = await this.subscriberModel.find({});
     let jobs = [];
-  
+
     for (const subscriber of subscribers) {
       const subSkills = subscriber.skills;
-  
+
       // Fetch jobs matching any of the subscriber's skills and populate company details
       const jobsMatchingSkills = await this.jobModel
         .find({ skills: { $in: subSkills } })
         .populate('companyId', 'name avatar'); // Populate companyId to get name and avatar
-  
+
       if (jobsMatchingSkills?.length) {
         // Map over the jobs and extract the relevant fields
         const matchingJobs = jobsMatchingSkills.map(item => ({
@@ -48,13 +48,16 @@ export class MailController {
           skills: item.skills,
           location: item.city
         }));
-  
+
+        // Giới hạn số lượng công việc (tối đa 10 công việc)
+        const limitedJobs = matchingJobs.slice(0, 10); // Chỉ lấy 10 công việc đầu tiên
+
         // Add the matching jobs to the jobs array
-        jobs = [...jobs, ...matchingJobs];
-  
+        jobs = [...jobs, ...limitedJobs];
+
         // Send an email to the subscriber with the jobs
         await this.mailerService.sendMail({
-          to: 'nguyenykhoa2405@gmail.com', // Use subscriber's email
+          to: subscriber.email, // Use subscriber's email
           from: '"DevJob" <devjob@gmail.com>', // Sender's email address
           subject: 'Thông báo việc làm phù hợp với kỹ năng của bạn', // Email subject
           template: 'sendEmailBySkills', // Template name
@@ -68,6 +71,6 @@ export class MailController {
     }
   }
 
-  
+
 
 }

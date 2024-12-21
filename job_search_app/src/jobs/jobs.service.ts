@@ -99,24 +99,60 @@ export class JobsService {
     };
   }
 
+  async getAllJobbyClient(currentPage: number, limit: number, qr: string) {
+    const { filter, sort, population, projection } = aqp(qr);
+    delete filter.page;
+    delete filter.pageSize;
+
+    const skip = (currentPage - 1) * limit;
+    const defaultLimit = limit ? limit : 10
+
+    const totalItems = await this.jobModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.jobModel
+      .find({ ...filter, isActive: true })
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'companyId',  // Populate companyId to get the company name
+        select: 'name avatar',      // Only select the name of the company
+      })
+      .select('name level city skills createdAt endDate')  // Select only required fields
+      .exec();
+
+
+    return {
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
+  }
+
+
   async getJobByCompany(companyId: string, currentPage: number, limit: number, qr: string) {
     const { filter, sort } = aqp(qr) as { filter: { [key: string]: any }; sort: any };
-  
+
     if ('page' in filter) delete filter.page;
     if ('pageSize' in filter) delete filter.pageSize;
     // Kết hợp filter với companyId
     const combinedFilter = { ...filter, companyId };
-  
+
     // Loại bỏ các tham số phân trang không liên quan trong filter
-  
+
     // Tính toán phân trang
     const defaultLimit = limit || 10;
     const skip = (currentPage - 1) * defaultLimit;
-  
+
     // Đếm tổng số mục
     const totalItems = await this.jobModel.countDocuments(combinedFilter);
     const totalPages = Math.ceil(totalItems / defaultLimit);
-  
+
     // Truy vấn dữ liệu với filter, phân trang và sắp xếp
     const result = await this.jobModel
       .find(combinedFilter)
@@ -125,7 +161,7 @@ export class JobsService {
       .sort({ createdAt: -1 }) // Sắp xếp dựa trên sort từ `aqp` hoặc mặc định
       .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude') // Lựa chọn trường cần thiết
       .exec();
-  
+
     // Trả về kết quả với meta
     return {
       meta: {
@@ -137,7 +173,7 @@ export class JobsService {
       result,
     };
   }
-  
+
 
   async getJobNearby(latitude: number, longitude: number, radius: number) {
     const radiusInDegrees = radius / 111.32;

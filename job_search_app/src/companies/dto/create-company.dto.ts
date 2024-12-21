@@ -5,7 +5,6 @@ export class CreateCompanyDto {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
   userId: mongoose.Schema.Types.ObjectId
 
   @IsString()
