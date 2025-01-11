@@ -34,7 +34,7 @@ export class Application {
     @Prop({ required: true })
     email: string;
 
-    @Prop({ required: true })
+    @Prop()
     cv: string;
 
     @Prop({ type: Object })

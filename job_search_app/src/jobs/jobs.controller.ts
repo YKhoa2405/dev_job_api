@@ -5,7 +5,7 @@ import { UpdateJobDto } from './dto/update-job.dto';
 
 import { IUser } from 'src/users/users.interface';
 import { Public, User } from 'src/common/decorator/customize';
-import { JobLevel, JobType } from './schemas/job.schema';
+
 
 @Controller('jobs')
 export class JobsController {

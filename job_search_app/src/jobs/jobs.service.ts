@@ -194,7 +194,7 @@ export class JobsService {
         path: 'companyId',
         select: 'name avatar slogan',
       })
-      .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location')
+      .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -skills -endDate -startDate -quantity ')
       .exec();
 
     const totalJobs = result.length;

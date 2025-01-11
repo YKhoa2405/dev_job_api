@@ -16,14 +16,11 @@ export class ApplicationsController {
   ) { }
 
   @Post('apply')
-  @UseInterceptors(FileInterceptor('file'))
   async create(
     @Body() createApplicationDto: CreateApplicationDto,
-    @UploadedFile() file: Express.Multer.File,
     @User() user: IUser
   ) {
-    const cvUrl = await this.filesService.uploadFile(file)
-    return this.applicationsService.createApplyJob(createApplicationDto, user, cvUrl);
+    return this.applicationsService.createApplyJob(createApplicationDto, user);
   }
 
   @Get()
@@ -53,12 +50,16 @@ export class ApplicationsController {
     return await this.applicationsService.getApplicationByJob(+currentPage, +limit, qr, jobId);
   }
 
-  
 
 
-  @Post('byUser')
-  async findApplicationByUser(@User() user: IUser) {
-    return await this.applicationsService.getApplicationByUser(user);
+
+  @Get('byUser')
+  async findApplicationByUser(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
+    @User() user: IUser) {
+    return await this.applicationsService.getApplicationByUser(+currentPage, +limit, qr, user);
   }
 
 

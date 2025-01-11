@@ -11,13 +11,12 @@ import aqp from 'api-query-params';
 export class ApplicationsService {
   constructor(@InjectModel(Application.name) private applycationModel: SoftDeleteModel<ApplicationDocument>) { }
 
-  async createApplyJob(createApplicationDto: CreateApplicationDto, user: IUser, cvUrl: string) {
-    const { companyId, jobId, name, phone, email } = createApplicationDto
+  async createApplyJob(createApplicationDto: CreateApplicationDto, user: IUser) {
+    const { companyId, jobId, name, phone, email, cv } = createApplicationDto
     let newApply = await this.applycationModel.create({
       jobId, companyId,
       userId: user._id,
-      name, phone, email,
-      cv: cvUrl,
+      name, phone, email,cv,
       createBy: {
         _id: user._id,
         email: email
@@ -136,14 +135,29 @@ export class ApplicationsService {
     }
   }
 
-  async getApplicationByUser(user: IUser) {
-    return await this.applycationModel
-      .find({ userId: user._id })
+  async getApplicationByUser(currentPage: number, limit: number, qr: string, user: IUser) {
+    const { filter, sort, population, projection } = aqp(qr)
+    delete filter.page
+    delete filter.limit
+
+    const skip = (+currentPage - 1) * +limit;
+    const defaultLimit = +limit ? +limit : 10;
+
+    // Kết hợp bộ lọc với userId
+    const combinedFilter = { ...filter, userId: user._id };
+
+
+    const totalItems = await this.applycationModel.countDocuments(combinedFilter);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.applycationModel
+      .find(combinedFilter)
       .sort({ createdAt: -1 })
+      .select('-name -phone -email -createBy -isDeleted -__v -deletedAt -updatedAt -slogan')
       .populate([
         {
           path: 'jobId',
-          select: 'name salary level',
+          select: 'name salary level createdAt',
         },
         {
           path: 'companyId',
@@ -151,6 +165,16 @@ export class ApplicationsService {
         },
       ])
       .exec();
+
+    return {
+      meta: {
+        currentPage: currentPage,
+        pageSize: defaultLimit,
+        totalItems: totalItems,
+        totalPages: totalPages
+      }, result
+    }
+
   }
 
 
