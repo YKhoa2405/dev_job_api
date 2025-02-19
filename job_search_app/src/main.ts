@@ -40,7 +40,8 @@ async function bootstrap() {
 
   // await app.listen(3000);
   // await app.listen(8000, '192.168.1.120');
-  await app.listen(8000, '192.168.1.10');
+  // await app.listen(8000, '192.168.1.4');
+  await app.listen(8000, '0.0.0.0');
 
 
 }

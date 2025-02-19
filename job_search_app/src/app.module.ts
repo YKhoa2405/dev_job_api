@@ -29,7 +29,10 @@ import { OrdersModule } from './orders/orders.module';
   imports: [
     ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [
+        ConfigModule,
+        MongooseModule.forRoot(process.env.MONGODB_URI)
+      ],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         connectionFactory: (connection) => {
