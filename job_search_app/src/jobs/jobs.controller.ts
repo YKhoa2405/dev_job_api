@@ -25,14 +25,6 @@ export class JobsController {
     return this.jobsService.getAllJob(+currentPage, +limit, qr);
   }
 
-  @Get('client')
-  findAllByClient(
-    @Query("page") currentPage: string,
-    @Query("limit") limit: string,
-    @Query() qr: string,
-  ) {
-    return this.jobsService.getAllJobbyClient(+currentPage, +limit, qr);
-  }
 
   @Public()
   @Get('nearby')

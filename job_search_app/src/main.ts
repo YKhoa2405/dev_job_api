@@ -39,9 +39,9 @@ async function bootstrap() {
   SwaggerModule.setup('swagger', app, documentFactory);
 
   // await app.listen(3000);
-  // await app.listen(8000, '192.168.1.120');
+  await app.listen(8000, '192.168.1.120');
   // await app.listen(8000, '192.168.1.4');
-  await app.listen(8000, '0.0.0.0');
+  // await app.listen(8000, '0.0.0.0');
 
 
 }

@@ -3,9 +3,8 @@ import { HydratedDocument } from 'mongoose';
 
 export type SkillDocument = HydratedDocument<Skill>;
 
-@Schema({ timestamps: true }) // Tự động thêm createdAt và updatedAt
 export class Skill {
-    @Prop({ required: true, unique: true }) // Tên kỹ năng, không được trùng lặp
+    @Prop({ required: true, unique: true })
     name: string;
 
     @Prop()

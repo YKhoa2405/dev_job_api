@@ -35,11 +35,6 @@ export class JobsService {
     return newJob;
   }
 
-
-  findAll() {
-    return `This action returns all jobs`;
-  }
-
   getJobDetail(id: string) {
     return this.jobModel
       .findOne({ _id: id })
@@ -84,42 +79,7 @@ export class JobsService {
         path: 'companyId',  // Populate companyId to get the company name
         select: 'name',      // Only select the name of the company
       })
-      .select('name quantity salary level isActive createdAt')  // Select only required fields
-      .exec();
-
-
-    return {
-      meta: {
-        currentPage,
-        pageSize: defaultLimit,
-        totalItems,
-        totalPages,
-      },
-      result,
-    };
-  }
-
-  async getAllJobbyClient(currentPage: number, limit: number, qr: string) {
-    const { filter, sort, population, projection } = aqp(qr);
-    delete filter.page;
-    delete filter.pageSize;
-
-    const skip = (currentPage - 1) * limit;
-    const defaultLimit = limit ? limit : 10
-
-    const totalItems = await this.jobModel.countDocuments(filter);
-    const totalPages = Math.ceil(totalItems / defaultLimit);
-
-    const result = await this.jobModel
-      .find({ ...filter, isActive: true })
-      .skip(skip)
-      .limit(defaultLimit)
-      .sort({ createdAt: -1 })
-      .populate({
-        path: 'companyId',  // Populate companyId to get the company name
-        select: 'name avatar',      // Only select the name of the company
-      })
-      .select('name level city skills createdAt endDate')  // Select only required fields
+      .select('name quantity salary level isActive createdAt skills')  // Select only required fields
       .exec();
 
 

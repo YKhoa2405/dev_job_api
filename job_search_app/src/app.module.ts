@@ -24,6 +24,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CvModule } from './cv/cv.module';
 import { SaveJobModule } from './save-job/save-job.module';
 import { OrdersModule } from './orders/orders.module';
+import { SuggestionsModule } from './suggestions/suggestions.module';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { OrdersModule } from './orders/orders.module';
     MongooseModule.forRootAsync({
       imports: [
         ConfigModule,
-        MongooseModule.forRoot(process.env.MONGODB_URI)
+        // MongooseModule.forRoot(process.env.MONGODB_URI)
       ],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
@@ -62,6 +63,7 @@ import { OrdersModule } from './orders/orders.module';
     CvModule,
     SaveJobModule,
     OrdersModule,
+    SuggestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService,

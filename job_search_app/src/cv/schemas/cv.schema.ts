@@ -15,14 +15,10 @@ export class Cv {
     url: string;
 
     @Prop()
-    skills: string[];
+    processedText: string;
 
-    @Prop()
-    city: string
-
-    @Prop()
-    experience: string
-
+    @Prop({default: false})
+    isPimary: boolean
 
 }
 
