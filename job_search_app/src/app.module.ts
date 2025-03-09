@@ -25,6 +25,7 @@ import { CvModule } from './cv/cv.module';
 import { SaveJobModule } from './save-job/save-job.module';
 import { OrdersModule } from './orders/orders.module';
 import { SuggestionsModule } from './suggestions/suggestions.module';
+import { CandidatesModule } from './candidates/candidates.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { SuggestionsModule } from './suggestions/suggestions.module';
     SaveJobModule,
     OrdersModule,
     SuggestionsModule,
+    CandidatesModule,
   ],
   controllers: [AppController],
   providers: [AppService,

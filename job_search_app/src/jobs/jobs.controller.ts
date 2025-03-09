@@ -25,6 +25,15 @@ export class JobsController {
     return this.jobsService.getAllJob(+currentPage, +limit, qr);
   }
 
+  @Get('searchkey')
+  findJobKey(
+    @Query("page") currentPage: string,
+    @Query("limit") limit: string,
+    @Query() qr: string,
+  ) {
+    return this.jobsService.getJobKey(+currentPage, +limit, qr);
+  }
+
 
   @Public()
   @Get('nearby')

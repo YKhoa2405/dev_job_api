@@ -35,6 +35,7 @@ export class JobsService {
     return newJob;
   }
 
+
   getJobDetail(id: string) {
     return this.jobModel
       .findOne({ _id: id })
@@ -118,7 +119,7 @@ export class JobsService {
       .find(combinedFilter)
       .skip(skip)
       .limit(defaultLimit)
-      .sort({ createdAt: -1 }) // Sắp xếp dựa trên sort từ `aqp` hoặc mặc định
+      .sort({ createdAt: -1 })
       .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude') // Lựa chọn trường cần thiết
       .exec();
 
@@ -133,6 +134,44 @@ export class JobsService {
       result,
     };
   }
+
+  async getJobKey(currentPage: number, limit: number, qr: string) {
+    const { filter, sort, population, projection } = aqp(qr);
+    delete filter.page;
+    delete filter.pageSize;
+
+    const skip = (currentPage - 1) * limit;
+    const defaultLimit = limit || 10;
+
+    const searchQuery = { ...filter, isActive: true };
+    
+
+    const totalItems = await this.jobModel.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.jobModel
+      .find(searchQuery)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'companyId',
+        select: 'name avatar',
+      })
+      .select('name jobType createdAt skills city')
+      .exec();
+
+    return {
+      meta: {
+        currentPage,
+        pageSize: defaultLimit,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
+}
+
 
 
   async getJobNearby(latitude: number, longitude: number, radius: number) {
