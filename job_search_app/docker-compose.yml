@@ -3,15 +3,21 @@ version: '3.8'
 services:
   api:
     build:
-      context: .
+      context: .  # Vì docker-compose.yml nằm cùng cấp src/
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
       - MONGODB_URI=mongodb+srv://nykhoa2405:Caichyrua11%40@cluster0.ffwm2.mongodb.net/jobsearchdb
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
 
   mongodb:
     image: mongo:latest
+    container_name: mongodb_container
+    restart: always
     ports:
       - "27017:27017"
     volumes:

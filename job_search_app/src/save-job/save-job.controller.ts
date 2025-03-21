@@ -40,14 +40,13 @@ export class SaveJobController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string, @User() user: IUser) {
+  async remove(@Param('id') jobId: string, @User() user: IUser) {
     const userId = user._id
-    const deletedJob = await this.saveJobService.removeSavedJob(id, userId);
+    const deletedJob = await this.saveJobService.removeSavedJob(jobId, userId);
     if (!deletedJob) {
       throw new NotFoundException('Saved job not found or not owned by the user');
     }
-    return { message: 'Job deleted successfully', id };
+    return deletedJob;
   }
-
 
 }

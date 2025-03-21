@@ -25,14 +25,15 @@ export class SaveJobService {
   }
 
   async checkIfJobIsSaved(jobId: string, userId: string): Promise<boolean> {
-    const savedJob = await this.saveJobModel.findOne({
-      jobId,
-      userId,
-      isActive: true, // Chỉ xét công việc đang được lưu
-    });
-    return savedJob !== null; // Trả về true nếu đã lưu, false nếu chưa
-  }
 
+
+    const savedJob = await this.saveJobModel.findOne({
+        jobId,
+        userId,
+    });
+
+    return !!savedJob; // Dùng !! để đảm bảo giá trị boolean
+}
   async getAllSaveJob(currentPage: number, limit: number, qr: string, userId: string) {
     const { filter = {}, sort, population, projection } = aqp(qr);
     delete filter.page;
@@ -73,8 +74,8 @@ export class SaveJobService {
     };
   }
 
-  async removeSavedJob(id: string, userId: string) {
-    const deletedJob = await this.saveJobModel.findOneAndDelete({ _id: id, userId });
+  async removeSavedJob(jobId: string, userId: string) {
+    const deletedJob = await this.saveJobModel.findOneAndDelete({ jobId, userId });
     return deletedJob;
   }
 

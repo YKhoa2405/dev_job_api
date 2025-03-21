@@ -31,8 +31,13 @@ export class CvService {
       .exec();
   }
 
-  updateCv(id: string, updateCvDto: UpdateCvDto) {
-    return this.cvModel.updateOne({ _id: id }, { ...updateCvDto })
+  async updateCv(id: string, updateCvDto: UpdateCvDto) {
+    if (updateCvDto.isPrimary) {
+      await this.cvModel.updateMany({ isPrimary: true }, { isPrimary: false });
+    }
+
+    // 2. Cập nhật CV mới
+    return this.cvModel.updateOne({ _id: id }, { ...updateCvDto });
   }
 
   removeCv(id: string) {

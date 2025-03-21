@@ -1,23 +1,21 @@
-# Use Node.js base image
+# Sử dụng Node.js chính thức
 FROM node:18
 
-# Set working directory
+# Đặt thư mục làm việc trong container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
+# Copy package.json và cài đặt dependencies
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy all project files
+# Copy toàn bộ mã nguồn vào container
 COPY . .
 
-# Build the NestJS app
+# Biên dịch dự án (nếu cần)
 RUN npm run build
 
-# Expose the application port
+# Expose cổng API
 EXPOSE 8000
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Chạy ứng dụng
+CMD ["npm", "run", "start"]

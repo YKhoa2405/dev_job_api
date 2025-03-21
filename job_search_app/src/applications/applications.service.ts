@@ -16,7 +16,7 @@ export class ApplicationsService {
     let newApply = await this.applycationModel.create({
       jobId, companyId,
       userId: user._id,
-      name, phone, email,cv,
+      name, phone, email, cv,
       createBy: {
         _id: user._id,
         email: email
@@ -65,50 +65,53 @@ export class ApplicationsService {
     }
   }
 
-  async getApplicationByCompany(currentPage: number, limit: number, qr: string, companyId: string) {
-    const { filter, sort, population, projection } = aqp(qr)
-    delete filter.page
-    delete filter.limit
+  // async getApplicationByCompany(currentPage: number, limit: number, qr: string, companyId: string) {
+  //   const { filter, sort, population, projection } = aqp(qr)
+  //   delete filter.page
+  //   delete filter.limit
 
-    filter.companyId = companyId;
+  //   filter.companyId = companyId;
 
-    const skip = (+currentPage - 1) * +limit;
-    const defaultLimit = +limit ? +limit : 10
+  //   const skip = (+currentPage - 1) * +limit;
+  //   const defaultLimit = +limit ? +limit : 10
 
-    const totalItems = (await this.applycationModel.find(filter)).length;
-    const totalPages = Math.ceil(totalItems / defaultLimit)
+  //   const totalItems = (await this.applycationModel.find(filter)).length;
+  //   const totalPages = Math.ceil(totalItems / defaultLimit)
 
 
-    const result = await this.applycationModel
-      .find(filter)
-      .skip(skip)
-      .limit(defaultLimit)
-      .sort({ createdAt: -1 })
-      .populate([
-        {
-          path: 'jobId',
-          select: 'name',
-        },
-      ])
-      .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
-      .exec();
+  //   const result = await this.applycationModel
+  //     .find(filter)
+  //     .skip(skip)
+  //     .limit(defaultLimit)
+  //     .sort({ createdAt: -1 })
+  //     .populate([
+  //       {
+  //         path: 'jobId',
+  //         select: 'name',
+  //       },
+  //     ])
+  //     .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
+  //     .exec();
 
-    return {
-      meta: {
-        currentPage: currentPage,
-        pageSize: defaultLimit,
-        totalItems: totalItems,
-        totalPages: totalPages
-      }, result
-    }
-  }
+  //   return {
+  //     meta: {
+  //       currentPage: currentPage,
+  //       pageSize: defaultLimit,
+  //       totalItems: totalItems,
+  //       totalPages: totalPages
+  //     }, result
+  //   }
+  // }
 
   async getApplicationByJob(currentPage: number, limit: number, qr: string, jobId: string) {
     const { filter, sort, population, projection } = aqp(qr)
     delete filter.page
     delete filter.limit
 
-    filter.jobId = jobId;
+    // filter.jobId = jobId;
+    const searchQuery = { ...filter, jobId: jobId };
+
+
 
     const skip = (+currentPage - 1) * +limit;
     const defaultLimit = +limit ? +limit : 10
@@ -118,7 +121,7 @@ export class ApplicationsService {
 
 
     const result = await this.applycationModel
-      .find(filter)
+      .find(searchQuery)
       .skip(skip)
       .limit(defaultLimit)
       .sort({ createdAt: -1 })
@@ -157,7 +160,7 @@ export class ApplicationsService {
       .populate([
         {
           path: 'jobId',
-          select: 'name salary level createdAt',
+          select: 'name salary level createdAt skills',
         },
         {
           path: 'companyId',

@@ -18,7 +18,7 @@ export class Cv {
     processedText: string;
 
     @Prop({default: false})
-    isPimary: boolean
+    isPrimary: boolean
 
 }
 

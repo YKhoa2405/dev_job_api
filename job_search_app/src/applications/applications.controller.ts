@@ -32,14 +32,14 @@ export class ApplicationsController {
     return this.applicationsService.getAllApplication(+currentPage, +limit, qr);
   }
 
-  @Get('byCompany/:companyId')
-  async findApplicationByCompany(
-    @Query("page") currentPage: string,
-    @Query("limit") limit: string,
-    @Query() qr: string,
-    @Param('companyId') companyId: string) {
-    return await this.applicationsService.getApplicationByCompany(+currentPage, +limit, qr, companyId);
-  }
+  // @Get('byCompany/:companyId')
+  // async findApplicationByCompany(
+  //   @Query("page") currentPage: string,
+  //   @Query("limit") limit: string,
+  //   @Query() qr: string,
+  //   @Param('companyId') companyId: string) {
+  //   return await this.applicationsService.getApplicationByCompany(+currentPage, +limit, qr, companyId);
+  // }
 
   @Get('byJob/:jobId')
   async findApplicationByJob(
