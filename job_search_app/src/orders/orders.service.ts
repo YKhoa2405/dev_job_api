@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -16,45 +16,53 @@ export class OrdersService {
 
   ) { }
 
-  private calculateEndDate(duration: number): Date {
-    const currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() + duration);
-    return currentDate;
+  private calculateEndDate(startDate: Date, duration: number): Date {
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + duration);
+    return endDate;
   }
 
   async createOrder(createOrderDto: CreateOrderDto, user: IUser) {
-    const { serviceId, companyId, amount } = createOrderDto;
+    const { serviceId, companyId, amount, startDate, remainingUses } = createOrderDto;
 
-    const existingOrder = await this.orderModel.findOne({
-      serviceId,
-      companyId,
-      isActive: true,
-    });
+    // Kiểm tra service tồn tại
+    const service = await this.serviceModel.findById(serviceId).lean().exec();
+    // Kiểm tra order hiện tại
+    const existingOrder = await this.orderModel
+      .findOne({
+        serviceId,
+        companyId,
+      })
+      .exec();
+
     if (existingOrder) {
-      const service = await this.serviceModel.findById(serviceId);
-      const additionalDuration = service.durationDays;
-
-      existingOrder.amount = Number(existingOrder.amount) + Number(amount);
-      existingOrder.endDate = new Date(existingOrder.endDate.getTime() + additionalDuration * 24 * 60 * 60 * 1000);
-
+      // Cộng dồn amount và kéo dài endDate
+      existingOrder.endDate = this.calculateEndDate(existingOrder.endDate, service.durationDays);
+      existingOrder.remainingUses = existingOrder.remainingUses + (service.usageLimit || 0);
+      existingOrder.amount += service.price;
       await existingOrder.save();
       return existingOrder;
     }
 
-    const service = await this.serviceModel.findById(serviceId);
-    const endDate = this.calculateEndDate(service.durationDays);
+    const initialRemainingUses = remainingUses !== undefined ? remainingUses : service.usageLimit;
 
-    const newOrder = this.orderModel.create({
-      ...createOrderDto,
-      endDate,
+    // Tạo order mới
+    const newOrder = await this.orderModel.create({
+      companyId,
+      serviceId,
+      amount: service.price,
+      code: service.code,
+      startDate: startDate || new Date(),
+      endDate: this.calculateEndDate(startDate || new Date(), service.durationDays),
+      remainingUses: initialRemainingUses,
       createBy: {
         _id: user._id,
         email: user.email,
       },
-    })
-    return newOrder
-  }
+    });
 
+    return newOrder;
+  }
   async getAllOrder(currentPage: number, limit: number, qs: string) {
     const { filter, sort, population } = aqp(qs);
     delete filter.page
@@ -88,11 +96,11 @@ export class OrdersService {
   async getOrderByCompany(id: string) {
     const order = await this.orderModel
       .find({ companyId: id })
-      .populate('serviceId', 'name')
+      .populate('serviceId', 'name price',)
       .exec();
-
+  
     const totalAmount = order.reduce((sum, o) => sum + o.amount, 0);
-
+  
     return {
       meta: {
         totalAmount,

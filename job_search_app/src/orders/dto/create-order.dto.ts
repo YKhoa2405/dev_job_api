@@ -1,21 +1,20 @@
-import { IsBoolean, IsDateString, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsDateString } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class CreateOrderDto {
-    @IsNotEmpty()
-    serviceId: mongoose.Schema.Types.ObjectId;
+  @IsMongoId()
+  serviceId: mongoose.Schema.Types.ObjectId;
 
-    @IsNotEmpty()
-    companyId: mongoose.Schema.Types.ObjectId;
+  @IsMongoId()
+  companyId: mongoose.Schema.Types.ObjectId;
 
-    @IsString()
-    amount:number
+  amount: number;
 
-    @IsOptional()
-    @IsDateString()
-    endDate?: Date;
+  startDate: Date;
 
-    @IsOptional()
-    @IsBoolean()
-    isActive?: boolean = true;
+  endDate: Date;
+
+  @IsOptional()
+  @IsNumber()
+  remainingUses?: number;
 }

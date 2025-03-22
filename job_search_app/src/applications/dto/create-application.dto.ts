@@ -27,6 +27,6 @@ export class CreateApplicationDto {
 
     status?: ApplicationStatus; // Optional, defaults to Pending in schema
 
-
+    @IsNotEmpty()
     cv: string
 }

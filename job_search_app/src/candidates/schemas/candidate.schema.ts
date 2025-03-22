@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IsOptional } from 'class-validator';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { User } from 'src/users/schemas/user.schema';
 
@@ -10,9 +11,11 @@ export class Candidate {
     userId: User;
 
     @Prop({ required: false, trim: true })
-    fullName: string; 
+    fullName: string;
 
-    avatar: string; 
+    @Prop()
+    @IsOptional()
+    avatar: string;
 
     @Prop({ required: false, trim: true })
     phone: string; // Số điện thoại

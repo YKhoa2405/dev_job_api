@@ -18,41 +18,43 @@ export class FollowService {
   async getFollowByUser(currentPage: number, limit: number, qr: string, userId: string) {
     const { filter, sort } = aqp(qr) as { filter: { [key: string]: any }; sort: any };
 
-    if ('page' in filter) delete filter.page;
-    if ('pageSize' in filter) delete filter.pageSize;
-    // Kết hợp filter với companyId
-    const combinedFilter = { ...filter, userId };
+    // Loại bỏ các tham số không cần thiết
+    delete filter.page;
+    delete filter.pageSize;
 
-    // Loại bỏ các tham số phân trang không liên quan trong filter
+    // Kết hợp filter với userId
+    const combinedFilter = { userId, ...filter };
 
-    // Tính toán phân trang
-    const defaultLimit = limit || 10;
-    const skip = (currentPage - 1) * defaultLimit;
+    // Tối ưu phân trang
+    const pageLimit = limit || 10;
+    const skip = (currentPage - 1) * pageLimit;
 
-    // Đếm tổng số mục
-    const totalItems = await this.followModel.countDocuments(combinedFilter);
-    const totalPages = Math.ceil(totalItems / defaultLimit);
+    // Thực hiện truy vấn song song
+    const [totalItems, result] = await Promise.all([
+      this.followModel.countDocuments(combinedFilter).lean().exec(),
+      this.followModel
+        .find(combinedFilter)
+        .skip(skip)
+        .limit(pageLimit)
+        .sort(sort || { createdAt: -1 }) // Sử dụng sort từ aqp nếu có, mặc định createdAt
+        .populate({
+          path: 'companyId',
+          select: 'name avatar slogan size followers',
+        })
+        .select('userId') // Chỉ lấy trường cần thiết
+        .lean() // Tăng hiệu suất
+        .exec(),
+    ]);
 
-    // Truy vấn dữ liệu với filter, phân trang và sắp xếp
-    const result = await this.followModel
-      .find(combinedFilter)
-      .skip(skip)
-      .limit(defaultLimit)
-      .sort({ createdAt: -1 }) // Sắp xếp dựa trên sort từ `aqp` hoặc mặc định
-      .populate({
-        path: 'companyId',
-        select: 'name avatar slogan size',
-      })
-      .select('userId') // Lựa chọn trường cần thiết
-      .exec();
+    // Tính toán totalPages
+    const totalPages = Math.ceil(totalItems / pageLimit);
 
-    // Trả về kết quả với meta
     return {
       meta: {
-        currentPage: currentPage,
-        pageSize: defaultLimit,
-        totalItems: totalItems,
-        totalPages: totalPages,
+        currentPage,
+        pageSize: pageLimit,
+        totalItems,
+        totalPages,
       },
       result,
     };

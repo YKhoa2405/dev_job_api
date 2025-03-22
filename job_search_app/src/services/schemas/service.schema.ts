@@ -18,7 +18,13 @@ export class Service {
     durationDays: number;
 
     @Prop()
+    usageLimit: number;
+
+    @Prop()
     isActive: boolean;
+
+    @Prop()
+    code:string
 
     @Prop({ type: Object })
     createBy: {

@@ -12,16 +12,25 @@ export class ApplicationsService {
   constructor(@InjectModel(Application.name) private applycationModel: SoftDeleteModel<ApplicationDocument>) { }
 
   async createApplyJob(createApplicationDto: CreateApplicationDto, user: IUser) {
-    const { companyId, jobId, name, phone, email, cv } = createApplicationDto
-    let newApply = await this.applycationModel.create({
-      jobId, companyId,
+    const { companyId, jobId, name, phone, email, cv } = createApplicationDto;
+  
+    // Tạo object mới với các trường cần thiết, giảm lặp dữ liệu
+    const newApplyData = {
+      jobId,
+      companyId,
       userId: user._id,
-      name, phone, email, cv,
+      name,
+      phone,
+      email,
+      cv,
       createBy: {
         _id: user._id,
-        email: email
-      }
-    })
+        email, // Sử dụng email từ DTO thay vì user.email để đảm bảo nhất quán
+      },
+    };
+  
+    const newApply = await this.applycationModel.create(newApplyData);
+  
     return newApply;
   }
 
@@ -53,6 +62,7 @@ export class ApplicationsService {
         },
       ])
       .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
+      .lean()
       .exec();
 
     return {
@@ -139,45 +149,54 @@ export class ApplicationsService {
   }
 
   async getApplicationByUser(currentPage: number, limit: number, qr: string, user: IUser) {
-    const { filter, sort, population, projection } = aqp(qr)
-    delete filter.page
-    delete filter.limit
+    const { filter, sort, population, projection } = aqp(qr);
 
-    const skip = (+currentPage - 1) * +limit;
-    const defaultLimit = +limit ? +limit : 10;
+    // Loại bỏ các tham số không cần thiết
+    delete filter.page;
+    delete filter.limit;
 
-    // Kết hợp bộ lọc với userId
-    const combinedFilter = { ...filter, userId: user._id };
+    // Tối ưu phân trang
+    const pageLimit = +limit || 10;
+    const skip = (currentPage - 1) * pageLimit;
 
+    // Kết hợp filter với userId
+    const combinedFilter = { userId: user._id, ...filter };
 
-    const totalItems = await this.applycationModel.countDocuments(combinedFilter);
-    const totalPages = Math.ceil(totalItems / defaultLimit);
+    // Thực hiện truy vấn song song
+    const [totalItems, result] = await Promise.all([
+      this.applycationModel.countDocuments(combinedFilter).lean().exec(),
+      this.applycationModel
+        .find(combinedFilter)
+        .skip(skip)
+        .limit(pageLimit)
+        .sort({ createdAt: -1 })
+        .select('-name -phone -email -createBy -isDeleted -__v -deletedAt -updatedAt -slogan')
+        .populate([
+          {
+            path: 'jobId',
+            select: 'name salary level createdAt skills',
+          },
+          {
+            path: 'companyId',
+            select: 'name avatar slogan',
+          },
+        ])
+        .lean() // Tăng hiệu suất
+        .exec(),
+    ]);
 
-    const result = await this.applycationModel
-      .find(combinedFilter)
-      .sort({ createdAt: -1 })
-      .select('-name -phone -email -createBy -isDeleted -__v -deletedAt -updatedAt -slogan')
-      .populate([
-        {
-          path: 'jobId',
-          select: 'name salary level createdAt skills',
-        },
-        {
-          path: 'companyId',
-          select: 'name avatar slogan',
-        },
-      ])
-      .exec();
+    // Tính toán totalPages
+    const totalPages = Math.ceil(totalItems / pageLimit);
 
     return {
       meta: {
-        currentPage: currentPage,
-        pageSize: defaultLimit,
-        totalItems: totalItems,
-        totalPages: totalPages
-      }, result
-    }
-
+        currentPage,
+        pageSize: pageLimit,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
   }
 
 
