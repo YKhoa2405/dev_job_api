@@ -54,7 +54,7 @@ export class ApplicationsService {
       .populate([
         {
           path: 'jobId',
-          select: 'name salary level',
+          select: 'name salary level isUrgent',
         },
         {
           path: 'companyId',
@@ -174,7 +174,7 @@ export class ApplicationsService {
         .populate([
           {
             path: 'jobId',
-            select: 'name salary level createdAt skills',
+            select: 'name salary level createdAt skills isUrgent',
           },
           {
             path: 'companyId',

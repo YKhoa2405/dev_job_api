@@ -65,9 +65,9 @@ export class Job {
     @IsInt()
     quantity: number;
 
-    @Prop({ enum: JobLevel }) 
-    @IsEnum(JobLevel) 
-    level: JobLevel; 
+    @Prop({ enum: JobLevel })
+    @IsEnum(JobLevel)
+    level: JobLevel;
 
     @Prop()
     @IsLatitude()
@@ -79,6 +79,12 @@ export class Job {
 
     @Prop({ default: true })
     isActive: boolean;
+
+    @Prop({ default: false })
+    isUrgent: boolean; 
+
+    @Prop()
+    urgentDays: number;
 
     @Prop({ type: Object })
     createBy: {

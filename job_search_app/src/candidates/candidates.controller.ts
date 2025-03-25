@@ -4,6 +4,7 @@ import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { User } from 'src/common/decorator/customize';
 import { IUser } from 'src/users/users.interface';
+import { copyFile } from 'fs';
 
 @Controller('candidates')
 export class CandidatesController {
@@ -20,9 +21,10 @@ export class CandidatesController {
   findAll(
     @Query("page") currentPage: string,
     @Query("limit") limit: string,
+    @Query("companyId") companyId: string,
     @Query() qr: string,
   ) {
-    return this.candidatesService.getAllCandidates(+currentPage, +limit, qr);
+    return this.candidatesService.getAllCandidates(+currentPage, +limit, qr, companyId);
   }
 
   @Get(':id')

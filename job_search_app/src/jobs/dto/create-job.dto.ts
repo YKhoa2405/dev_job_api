@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsInt, IsLatitude, IsLongitude, IsArray, IsOptional, IsDate, Min, ValidateNested, IsNotEmptyObject, IsEnum, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsLatitude, IsLongitude, IsArray, IsOptional, IsDate, Min, ValidateNested, IsNotEmptyObject, IsEnum, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import mongoose from 'mongoose';
 import { JobLevel, JobType } from '../schemas/job.schema';
@@ -69,4 +69,13 @@ export class CreateJobDto {
     @IsBoolean()
     @IsOptional()
     isActive?: boolean = true;
+
+    @IsBoolean()
+    @IsOptional()
+    isUrgent?: boolean;
+
+    @IsNumber()
+    @IsOptional()
+    urgentDays?: number;
+    
 }

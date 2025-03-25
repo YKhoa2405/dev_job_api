@@ -19,11 +19,10 @@ export class JobsService {
     @InjectModel(Skill.name) private skillModel: Model<Skill>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
 
-
   ) { }
 
   async createJob(createJobDto: CreateJobDto, user: IUser) {
-    const { companyId } = createJobDto;
+    const { companyId, isUrgent } = createJobDto;
 
     // Bắt đầu transaction để đảm bảo tính nhất quán
     const session = await this.orderModel.startSession();
@@ -48,9 +47,37 @@ export class JobsService {
       order.remainingUses -= 1;
       await order.save({ session });
 
+
+
+      let urgentExpiry: Date | null = null;
+
+      // Nếu người dùng chọn tin "Gấp", kiểm tra gói "Việc làm gấp"
+      if (isUrgent) {
+        const urgentOrder = await this.orderModel.findOne({
+          companyId: companyId,
+          code: 'URGENT_JOB_PACKAGE',
+          remainingUses: { $gt: 0 },
+          endDate: { $gte: new Date() },
+        }).session(session);
+
+        if (!urgentOrder) {
+          throw new ForbiddenException('Bạn cần mua gói "Việc làm gấp" để sử dụng tính năng.');
+        }
+
+        // Xác định thời gian hết hạn của nhãn "Gấp" (15 ngày)
+        urgentExpiry = new Date();
+        urgentExpiry.setDate(urgentExpiry.getDate() + 7);
+
+        // Giảm số lượt sử dụng của gói "Việc làm gấp"
+        urgentOrder.remainingUses -= 1;
+        await urgentOrder.save({ session });
+      }
+
       // Tạo công việc
       const newJob = await this.jobModel.create([{
         ...createJobDto,
+        isUrgent: isUrgent || false,
+        urgentExpiry: urgentExpiry,
         createBy: {
           _id: user._id,
           email: user.email,
@@ -134,7 +161,7 @@ export class JobsService {
         path: 'companyId',  // Populate companyId to get the company name
         select: 'name',      // Only select the name of the company
       })
-      .select('name quantity salary level isActive createdAt skills')  // Select only required fields
+      .select('name quantity salary level isActive createdAt endDate skills isUrgent')  // Select only required fields
       .lean()
       .exec();
 
@@ -218,7 +245,7 @@ export class JobsService {
           path: 'companyId',
           select: 'name avatar',
         })
-        .select('name jobType createdAt skills city')
+        .select('name jobType createdAt skills city isUrgent')
         .lean() // Tối ưu hiệu suất
         .exec(),
     ]);

@@ -25,8 +25,6 @@ export class SaveJobService {
   }
 
   async checkIfJobIsSaved(jobId: string, userId: string): Promise<boolean> {
-
-
     const savedJob = await this.saveJobModel.findOne({
         jobId,
         userId,
@@ -54,7 +52,7 @@ export class SaveJobService {
       .sort({ createdAt: -1 })
       .populate({
         path: 'jobId',
-        select: 'name companyId salary level skills endDate',
+        select: 'name companyId salary level skills endDate isUrgent',
         populate: {
           path: 'companyId',
           select: 'name avatar',
