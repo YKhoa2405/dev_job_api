@@ -10,6 +10,7 @@ import aqp from 'api-query-params';
 import { Skill } from 'src/skills/schemas/skill.schema';
 import { Application } from 'src/applications/schemas/application.schema';
 import { Order } from 'src/orders/schemas/order.schema';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class JobsService {
@@ -106,7 +107,6 @@ export class JobsService {
   }
 
 
-
   async getJobDetail(jobId: string, userId: string) {
     const job = await this.jobModel
       .findOne({ _id: jobId })
@@ -122,8 +122,6 @@ export class JobsService {
 
     return { ...job, hasApplied: !!hasApplied };
   }
-
-
 
   updateJob(id: string, updateJobDto: UpdateJobDto, user: IUser) {
     return this.jobModel.updateOne({ _id: id },
@@ -302,5 +300,40 @@ export class JobsService {
       result,
     };
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleExpiredUrgentJobs() {
+    console.log('Bắt đầu kiểm tra tin tuyển dụng gấp hết hạn...')
+    try {
+      const currentDate = new Date();
+
+      // Tìm các tin tuyển dụng gấp đã hết hạn
+      const expiredUrgentJobs = await this.jobModel
+        .find({
+          isUrgent: true,
+          endDate: { $lt: currentDate }, // Hết hạn trước thời điểm hiện tại
+        })
+        .exec();
+
+      if (expiredUrgentJobs.length === 0) {
+        console.log('Không có tin tuyển dụng gấp nào hết hạn.')
+        return;
+      }
+
+      // Cập nhật tất cả tin gấp hết hạn thành không gấp
+      const jobIds = expiredUrgentJobs.map(job => job._id);
+      const updateResult = await this.jobModel.updateMany(
+        { _id: { $in: jobIds } },
+        { $set: { isUrgent: false } },
+      );
+
+      console.log(
+        `Đã cập nhật ${updateResult.modifiedCount} tin tuyển dụng gấp hết hạn thành không gấp.`,
+      );
+    } catch (error) {
+
+    }
+  }
+
 
 }

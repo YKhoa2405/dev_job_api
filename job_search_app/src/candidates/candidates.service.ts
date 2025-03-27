@@ -40,7 +40,6 @@ export class CandidatesService {
     }
 
     // Xử lý phân trang & truy vấn danh sách ứng viên
-    console.log(companyId)
     const { filter, sort, population, projection } = aqp(qr);
     delete filter.page;
     delete filter.pageSize;

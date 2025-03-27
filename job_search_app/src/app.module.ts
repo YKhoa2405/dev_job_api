@@ -26,6 +26,7 @@ import { SaveJobModule } from './save-job/save-job.module';
 import { OrdersModule } from './orders/orders.module';
 import { SuggestionsModule } from './suggestions/suggestions.module';
 import { CandidatesModule } from './candidates/candidates.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { CandidatesModule } from './candidates/candidates.module';
     OrdersModule,
     SuggestionsModule,
     CandidatesModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService,
