@@ -26,8 +26,13 @@ export class OrdersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOrderByCompany(@Param('id') id: string) {
     return this.ordersService.getOrderByCompany(id);
+  }
+
+  @Get(':id/detail')
+  findOne(@Param('id') id: string) {
+    return this.ordersService.getOrderDetail(id);
   }
 
 

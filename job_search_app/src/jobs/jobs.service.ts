@@ -48,8 +48,6 @@ export class JobsService {
       order.remainingUses -= 1;
       await order.save({ session });
 
-
-
       let urgentExpiry: Date | null = null;
 
       // Nếu người dùng chọn tin "Gấp", kiểm tra gói "Việc làm gấp"
@@ -78,7 +76,7 @@ export class JobsService {
       const newJob = await this.jobModel.create([{
         ...createJobDto,
         isUrgent: isUrgent || false,
-        urgentExpiry: urgentExpiry,
+        urgentExpiry,
         createBy: {
           _id: user._id,
           email: user.email,

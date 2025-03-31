@@ -7,12 +7,15 @@ import { Model } from 'mongoose';
 import { IUser } from 'src/users/users.interface';
 import aqp from 'api-query-params';
 import { Order } from 'src/orders/schemas/order.schema';
+import { Cv } from 'src/cv/schemas/cv.schema';
 
 @Injectable()
 export class CandidatesService {
   constructor(
     @InjectModel(Candidate.name) private model: Model<CandidateDocument>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
+    @InjectModel(Cv.name) private cvModel: Model<Cv>,
+
   ) { }
   create(createCandidateDto: CreateCandidateDto, user: IUser) {
     return this.model.create({
@@ -25,18 +28,20 @@ export class CandidatesService {
     })
   }
 
-  async getAllCandidates(currentPage: number, limit: number, qr: string, companyId:string) {
+  async getAllCandidates(currentPage: number, limit: number, qr: string, companyId: string, user: IUser) {
     // Kiểm tra gói dịch vụ trước khi truy vấn
-    const order = await this.orderModel.findOne({
-      companyId: companyId,
-      code: 'FIND_CADIDATES_PACKAGE',  // Gói dịch vụ yêu cầu
-      endDate: { $gte: new Date() }, // Chưa hết hạn
-    });
+    if (user?.role.name !== 'SUPER_ADMIN') {
+      const order = await this.orderModel.findOne({
+        companyId: companyId,
+        code: 'FIND_CADIDATES_PACKAGE', // Gói dịch vụ yêu cầu
+        endDate: { $gte: new Date() }, // Chưa hết hạn
+      });
 
-    if (!order) {
-      throw new ForbiddenException(
-        'Bạn cần mua "Gói Xem Hồ Sơ Ứng Viên" để thực hiện.'
-      );
+      if (!order) {
+        throw new ForbiddenException(
+          'Bạn cần mua "Gói Xem Hồ Sơ Ứng Viên" để thực hiện.'
+        );
+      }
     }
 
     // Xử lý phân trang & truy vấn danh sách ứng viên
@@ -70,11 +75,33 @@ export class CandidatesService {
   }
 
 
-  findOne(id: string) {
-    return this.model.findOne({
-      userId: id,
-      isDeleted: false
-    });
+  async findOne(id: string) {
+    // Tìm bản ghi Candidate
+    const candidate = await this.model
+      .findOne({
+        userId: id,
+        isDeleted: false,
+      })
+      .exec();
+  
+    if (!candidate) {
+      return null; // Không tìm thấy ứng viên
+    }
+  
+    // Tìm CV chính và chỉ lấy trường url
+    const primaryCv = await this.cvModel
+      .findOne({
+        userId: id,
+        isPrimary: true,
+      })
+      .select('url') // Chỉ lấy trường url
+      .exec();
+  
+    // Kết hợp kết quả, đưa url ra ngoài
+    return {
+      ...candidate.toObject(),
+      cvUrl: primaryCv?.url || null, // Trả về url trực tiếp, hoặc null nếu không có
+    };
   }
 
   update(id: string, updateCandidateDto: UpdateCandidateDto, user: IUser) {

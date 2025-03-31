@@ -126,7 +126,7 @@ export class ApplicationsService {
     const skip = (+currentPage - 1) * +limit;
     const defaultLimit = +limit ? +limit : 10
 
-    const totalItems = (await this.applycationModel.find(filter)).length;
+    const totalItems = await this.applycationModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / defaultLimit)
 
 
@@ -213,4 +213,12 @@ export class ApplicationsService {
   removeApplication(id: string) {
     return this.applycationModel.deleteOne({ _id: id });
   }
+
+  findOne(id: string) {
+    return this.applycationModel
+        .findOne({ _id: id })
+        .populate('companyId', 'name') // Lấy name từ companyId
+        .populate('jobId', 'name'); // Lấy name từ jobId
+}
+
 }

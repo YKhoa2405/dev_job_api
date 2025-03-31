@@ -32,6 +32,11 @@ export class ApplicationsController {
     return this.applicationsService.getAllApplication(+currentPage, +limit, qr);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.applicationsService.findOne(id);
+  }
+
   // @Get('byCompany/:companyId')
   // async findApplicationByCompany(
   //   @Query("page") currentPage: string,

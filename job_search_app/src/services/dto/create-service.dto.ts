@@ -17,6 +17,13 @@ export class CreateServiceDto {
   @IsNotEmpty()
   price: number;
 
+  @IsString()
+  @IsNotEmpty()
+  code: string
+
+  @IsNumber()
+  usageLimit
+
   // Thời gian sử dụng dịch vụ, tính theo ngày (không bắt buộc)
   @IsNumber()
   @IsOptional()

@@ -23,8 +23,9 @@ export class CandidatesController {
     @Query("limit") limit: string,
     @Query("companyId") companyId: string,
     @Query() qr: string,
+    @User() user: IUser
   ) {
-    return this.candidatesService.getAllCandidates(+currentPage, +limit, qr, companyId);
+    return this.candidatesService.getAllCandidates(+currentPage, +limit, qr, companyId,user);
   }
 
   @Get(':id')

@@ -73,9 +73,5 @@ export class CreateJobDto {
     @IsBoolean()
     @IsOptional()
     isUrgent?: boolean;
-
-    @IsNumber()
-    @IsOptional()
-    urgentDays?: number;
     
 }

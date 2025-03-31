@@ -8,7 +8,7 @@ export type JobDocument = HydratedDocument<Job>;
 export enum JobType {
     OFFICE = 'Office',
     REMOTE = 'Remote',
-    HYBRID = 'Hibrid'
+    HYBRID = 'Hybrid'
 }
 
 export enum JobLevel {
@@ -81,10 +81,10 @@ export class Job {
     isActive: boolean;
 
     @Prop({ default: false })
-    isUrgent: boolean; 
+    isUrgent: boolean;
 
-    @Prop()
-    urgentDays: number;
+    @Prop({ type: Date })
+    urgentExpiry?: Date;
 
     @Prop({ type: Object })
     createBy: {

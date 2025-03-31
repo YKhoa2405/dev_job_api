@@ -63,25 +63,43 @@ export class OrdersService {
 
     return newOrder;
   }
+
   async getAllOrder(currentPage: number, limit: number, qs: string) {
     const { filter, sort, population } = aqp(qs);
-    delete filter.page
-    delete filter.limit
+    delete filter.page;
+    delete filter.limit;
+
+    // Handle date range filtering for createdAt
+    if (filter.createdAtFrom || filter.createdAtTo) {
+      filter.createdAt = {};
+      if (filter.createdAtFrom) {
+        filter.createdAt.$gte = new Date(filter.createdAtFrom);
+      }
+      if (filter.createdAtTo) {
+        filter.createdAt.$lte = new Date(filter.createdAtTo);
+      }
+      // Remove the original fields to avoid conflicts
+      delete filter.createdAtFrom;
+      delete filter.createdAtTo;
+    }
 
     const skip = (+currentPage - 1) * +limit;
-    const defaultLimit = +limit ? +limit : 10
+    const defaultLimit = +limit ? +limit : 10;
 
     // Tổng số phần tử
-    const totalItems = (await this.orderModel.find(filter)).length
+    const totalItems = (await this.orderModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-
-    const result = await this.orderModel.find(filter).
-      skip(skip).
-      limit(defaultLimit).
-      sort({ createdAt: -1 }).
-      populate(population).
-      exec()
+    const result = await this.orderModel
+      .find(filter)
+      .skip(skip)
+      .limit(defaultLimit)
+      .sort({ createdAt: -1 }) // Keep your existing sort
+      .populate([
+        { path: 'serviceId', select: 'name' },
+        { path: 'companyId', select: 'name' }
+      ])
+      .exec();
 
     return {
       meta: {
@@ -89,8 +107,9 @@ export class OrdersService {
         pageSize: defaultLimit,
         totalItems: totalItems,
         totalPages: totalPages
-      }, result
-    }
+      },
+      result
+    };
   }
 
   async getOrderByCompany(id: string) {
@@ -98,9 +117,9 @@ export class OrdersService {
       .find({ companyId: id })
       .populate('serviceId', 'name price',)
       .exec();
-  
+
     const totalAmount = order.reduce((sum, o) => sum + o.amount, 0);
-  
+
     return {
       meta: {
         totalAmount,
@@ -109,6 +128,27 @@ export class OrdersService {
       result: order,
     };
   }
+
+  async getOrderDetail(id: string) {
+    const order = await this.orderModel.findOne({ _id: id })
+      .populate({
+        path: 'serviceId',
+        select: 'name', // Chỉ lấy trường name của service
+      })
+      .populate({
+        path: 'companyId',
+        select: 'name', // Nếu muốn lấy thêm tên công ty
+      });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+
+
 
   @Cron('0 0 * * *')
   async updateExpiredOrders() {

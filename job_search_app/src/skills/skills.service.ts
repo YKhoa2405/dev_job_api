@@ -26,15 +26,18 @@ export class SkillsService {
 
     const skip = (currentPage - 1) * limit;
     const defaultLimit = limit ? limit : 10
+    
 
     const totalItems = await this.skillModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
+    const sortQuery = sort && Object.keys(sort).length > 0 ? sort : { popularity: -1 };
+
     const result = await this.skillModel
       .find(filter)
       .skip(skip)
+      .sort(sortQuery as any)
       .limit(defaultLimit)
-      .sort(sort as any)
       .exec();
 
     return {
