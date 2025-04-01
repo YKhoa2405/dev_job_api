@@ -7,6 +7,7 @@ import { Candidate, CandidateSchema } from 'src/candidates/schemas/candidate.sch
 import { Skill, SkillSchema } from 'src/skills/schemas/skill.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderSchema } from 'src/orders/schemas/order.schema';
+import { Company, CompanySchema } from 'src/companies/schemas/company.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,8 @@ import { Order, OrderSchema } from 'src/orders/schemas/order.schema';
       { name: Candidate.name, schema: CandidateSchema },
       { name: Skill.name, schema: SkillSchema },
       { name: Order.name, schema: OrderSchema },
+      { name: Company.name, schema: CompanySchema },
+
 
     ]),
   ],

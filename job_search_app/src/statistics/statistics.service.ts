@@ -4,7 +4,9 @@ import aqp from 'api-query-params';
 import { Model } from 'mongoose';
 import { Application } from 'src/applications/schemas/application.schema';
 import { Candidate } from 'src/candidates/schemas/candidate.schema';
+import { Company } from 'src/companies/schemas/company.schema';
 import { Job } from 'src/jobs/schemas/job.schema';
+import { Order } from 'src/orders/schemas/order.schema';
 import { Skill } from 'src/skills/schemas/skill.schema';
 
 @Injectable()
@@ -13,8 +15,12 @@ export class StatisticsService {
         @InjectModel(Application.name) private applicationModel: Model<Application>,
         @InjectModel(Job.name) private jobModel: Model<Job>,
         @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
-        @InjectModel(Skill.name) private skillModel: Model<Skill>
+        @InjectModel(Skill.name) private skillModel: Model<Skill>,
+        @InjectModel(Company.name) private companyModel: Model<Company>,
+        @InjectModel(Order.name) private orderModel: Model<Order>
     ) { }
+
+    // Company
 
     async getApplicationsPerJob(qr: string) {
         const { filter, sort } = aqp(qr);
@@ -216,6 +222,249 @@ export class StatisticsService {
 
         return result;
     }
+
+    async getOverViewAdmin(qr: string) {
+        const { filter } = aqp(qr);
+        const timeRange = filter.timeRange || '24h'; // Mặc định 24 giờ
+        let timeFilter = {};
+        switch (timeRange) {
+            case '24h':
+                timeFilter = { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) };
+                break;
+            case '7d':
+                timeFilter = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+                break;
+            case '30d':
+                timeFilter = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
+                break;
+            default:
+                timeFilter = {};
+        }
+
+        const totalCandidates = await this.candidateModel.countDocuments();
+        const newCandidates = await this.candidateModel.countDocuments({
+            createdAt: timeFilter,
+        });
+
+        const totalCompanies = await this.companyModel.countDocuments();
+        const newCompanies = await this.companyModel.countDocuments({
+            createdAt: timeFilter,
+        });
+        const pendingCompanies = await this.companyModel.countDocuments({
+            isApproved: false,
+        });
+
+        const totalJobPostings = await this.jobModel.countDocuments();
+        const newJobPostings = await this.jobModel.countDocuments({
+            createdAt: timeFilter,
+        });
+
+        const revenueResult = await this.orderModel
+            .aggregate([
+                { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
+            ])
+            .exec();
+        const revenue = revenueResult.length > 0 ? `${revenueResult[0].totalAmount.toLocaleString()}` : '0';
+
+        const revenueIncreaseResult = await this.orderModel
+            .aggregate([
+                { $match: { createdAt: timeFilter } },
+                { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
+            ])
+            .exec();
+        const revenueIncrease =
+            revenueIncreaseResult.length > 0
+                ? `+${revenueIncreaseResult[0].totalAmount.toLocaleString()}`
+                : '+0';
+
+        return {
+            candidates: { total: totalCandidates, new: newCandidates },
+            Companies: { total: totalCompanies, new: newCompanies, pending: pendingCompanies },
+            jobPostings: { total: totalJobPostings, new: newJobPostings },
+            revenue: { total: revenue, new: revenueIncrease },
+        };
+    }
+
+    // src/overview/overview.service.ts
+    async getAnalyticsAdmin(year: number) {
+        const months = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`);
+
+        // User Growth
+        const userGrowthCandidatesAgg = await this.candidateModel
+            .aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(year, 0, 1),
+                            $lte: new Date(year, 11, 31),
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: { $month: '$createdAt' },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { '_id': 1 } },
+            ])
+            .exec();
+
+        const userGrowthCompaniesAgg = await this.companyModel
+            .aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(year, 0, 1),
+                            $lte: new Date(year, 11, 31),
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: { $month: '$createdAt' },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { '_id': 1 } },
+            ])
+            .exec();
+
+        // Job Stats
+        const jobStatsPostedAgg = await this.jobModel
+            .aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(year, 0, 1),
+                            $lte: new Date(year, 11, 31),
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: { $month: '$createdAt' },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { '_id': 1 } },
+            ])
+            .exec();
+
+        const jobStatsAppliedAgg = await this.applicationModel
+            .aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(year, 0, 1),
+                            $lte: new Date(year, 11, 31),
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: { $month: '$createdAt' },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { '_id': 1 } },
+            ])
+            .exec();
+
+        // Revenue Trend
+        const revenueTrendAgg = await this.orderModel
+            .aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(year, 0, 1),
+                            $lte: new Date(year, 11, 31),
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: { $month: '$createdAt' },
+                        totalAmount: { $sum: '$amount' },
+                    },
+                },
+                { $sort: { '_id': 1 } },
+            ])
+            .exec();
+
+        // Popular Skills từ bảng Skill
+        const popularSkills = await this.skillModel
+            .find()
+            .sort({ popularity: -1 })
+            .limit(10)
+            .select('name popularity')
+            .lean()
+            .exec();
+
+        // Application Status
+        const applicationStatusAgg = await this.applicationModel
+            .aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(year, 0, 1),
+                            $lte: new Date(year, 11, 31),
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: '$status',
+                        count: { $sum: 1 },
+                    },
+                },
+                {
+                    $project: {
+                        status: '$_id',
+                        count: 1,
+                        _id: 0,
+                    },
+                },
+            ])
+            .exec();
+
+        // Danh sách trạng thái cố định
+        const statuses = ['Chờ xử lý', 'Đã xem', 'Chấp nhận', 'Từ chối'];
+        const applicationStatus = statuses.map(status => {
+            const found = applicationStatusAgg.find(item => item.status === status);
+            return {
+                status,
+                count: found ? found.count : 0,
+            };
+        });
+
+        // Chuyển đổi dữ liệu
+        const candidates = Array(12).fill(0);
+        const companies = Array(12).fill(0);
+        const posted = Array(12).fill(0);
+        const applied = Array(12).fill(0);
+        const revenueData = Array(12).fill(0);
+
+        userGrowthCandidatesAgg.forEach(item => { candidates[item._id - 1] = item.count; });
+        userGrowthCompaniesAgg.forEach(item => { companies[item._id - 1] = item.count; });
+        jobStatsPostedAgg.forEach(item => { posted[item._id - 1] = item.count; });
+        jobStatsAppliedAgg.forEach(item => { applied[item._id - 1] = item.count; });
+        revenueTrendAgg.forEach(item => { revenueData[item._id - 1] = item.totalAmount / 1000000; });
+
+        return {
+            userGrowth: { labels: months, candidates, companies },
+            jobStats: { labels: months, posted, applied },
+            revenueTrend: { labels: months, data: revenueData },
+            popularSkills: popularSkills.map(skill => ({
+                skill: skill.name,
+                popularity: skill.popularity,
+            })),
+            applicationStatus,
+        };
+    }
 }
+
+
+
 
 

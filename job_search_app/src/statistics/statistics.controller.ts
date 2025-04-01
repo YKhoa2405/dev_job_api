@@ -34,4 +34,15 @@ export class StatisticsController {
     return this.statisticsService.getExpectedSalary(query);
   }
 
+  // Admin
+  @Get("overview-admin")
+  async getOverviewAdmin(@Query() qr: string) {
+    return this.statisticsService.getOverViewAdmin(qr);
+  }
+
+  @Get("analytics-admin")
+  async getAnalytics(@Query('year') year: string) {
+    const selectedYear = year ? parseInt(year) : new Date().getFullYear();
+    return this.statisticsService.getAnalyticsAdmin(selectedYear);
+  }
 }
