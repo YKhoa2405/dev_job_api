@@ -27,6 +27,7 @@ import { OrdersModule } from './orders/orders.module';
 import { SuggestionsModule } from './suggestions/suggestions.module';
 import { CandidatesModule } from './candidates/candidates.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     SuggestionsModule,
     CandidatesModule,
     StatisticsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService,
