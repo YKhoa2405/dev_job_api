@@ -116,4 +116,29 @@ export class CandidatesService {
       });
   }
 
+
+  async findMatchingCandidates(criteria: {
+    skills: string[];
+    location?: string;
+  }): Promise<Candidate[]> {
+    // Xây dựng truy vấn động dựa trên các tiêu chí
+    const query: any = {
+      skills: { $in: criteria.skills }, // Ứng viên có ít nhất một kỹ năng khớp
+    };
+
+    // Nếu có tiêu chí location, thêm vào query
+    if (criteria.location) {
+      query.location = criteria.location;
+    }
+
+
+    // Truy vấn MongoDB để tìm ứng viên phù hợp
+    const matchingCandidates = await this.model
+      .find(query)
+      .limit(100) // Giới hạn số lượng ứng viên trả về (tối ưu hiệu suất)
+      .exec();
+
+    return matchingCandidates;
+  }
+
 }

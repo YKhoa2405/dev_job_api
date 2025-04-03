@@ -15,7 +15,7 @@ export class NotificationsController {
     return this.notificationsService.create(createNotificationDto, userId);
   }
 
-  @Get()
+  @Get(':userId')
   findAllByUser(
     @Param('userId') userId: string,
     @Query("page") currentPage: string,
@@ -32,7 +32,7 @@ export class NotificationsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationsService.update(+id, updateNotificationDto);
+    return this.notificationsService.update(id, updateNotificationDto);
   }
 
   // @Delete(':id')
@@ -40,8 +40,8 @@ export class NotificationsController {
   //   return this.notificationsService.remove(+id);
   // }
 
-  @Delete()
-  removeAll(@Body() userID: string) {
+  @Delete(':userId')
+  removeAll(@Param('userId') userID: string) {
     return this.notificationsService.removeAllByUser(userID);
   }
 }

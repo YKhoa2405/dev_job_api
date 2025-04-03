@@ -24,25 +24,12 @@ export class NotificationsService {
     limit: number,
     qr: string,
   ) {
-    const { filter, sort, population } = aqp(qr || '');
+    const { filter, sort, population } = aqp(qr);
     delete filter.page;
     delete filter.limit;
 
     // Thêm userId vào filter để chỉ lấy thông báo của người dùng này
     filter.userId = userId;
-
-    // Xử lý lọc theo khoảng thời gian createdAt
-    if (filter.createdAtFrom || filter.createdAtTo) {
-      filter.createdAt = {};
-      if (filter.createdAtFrom) {
-        filter.createdAt.$gte = new Date(filter.createdAtFrom);
-      }
-      if (filter.createdAtTo) {
-        filter.createdAt.$lte = new Date(filter.createdAtTo);
-      }
-      delete filter.createdAtFrom;
-      delete filter.createdAtTo;
-    }
 
     const skip = (currentPage - 1) * limit;
     const defaultLimit = limit ? limit : 10;
@@ -73,10 +60,16 @@ export class NotificationsService {
     return `This action returns a #${id} notification`;
   }
 
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
-  }
+  async update(id: string, updateNotificationDto: UpdateNotificationDto): Promise<Notification> {
+    const notification = await this.notificationModel.findByIdAndUpdate(
+      id,
+      { $set: updateNotificationDto }, // Cập nhật các trường được gửi trong DTO
+      { new: true }, // Trả về document đã cập nhật
+    ).exec();
 
+    return notification;
+  }
+  
   async removeAllByUser(userId: string) {
     const result = await this.notificationModel.deleteMany({ userId }).exec();
     return { deletedCount: result.deletedCount };

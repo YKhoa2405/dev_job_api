@@ -11,6 +11,9 @@ import { Skill } from 'src/skills/schemas/skill.schema';
 import { Application } from 'src/applications/schemas/application.schema';
 import { Order } from 'src/orders/schemas/order.schema';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Candidate } from 'src/candidates/schemas/candidate.schema';
+import { CandidatesService } from 'src/candidates/candidates.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class JobsService {
@@ -19,7 +22,8 @@ export class JobsService {
     @InjectModel(Application.name) private applicationModel: Model<Application>,
     @InjectModel(Skill.name) private skillModel: Model<Skill>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
-
+    private notificationService: NotificationsService,
+    private candidateService: CandidatesService,
   ) { }
 
   async createJob(createJobDto: CreateJobDto, user: IUser) {
@@ -94,13 +98,33 @@ export class JobsService {
       // Commit transaction
       await session.commitTransaction();
       session.endSession();
-
+      // Tạo thông báo
+      await this.sendNewJobNotifications(newJob[0]);
       return newJob[0]; // Vì `create()` với mảng trả về một mảng, lấy phần tử đầu tiên
     } catch (error) {
       // Rollback nếu có lỗi
       await session.abortTransaction();
       session.endSession();
       throw error;
+    }
+  }
+
+  private async sendNewJobNotifications(job: Job) {
+    const matchingCandidates = await this.candidateService.findMatchingCandidates({
+      skills: job.skills,
+      location: job.city,
+    });
+    for (const candidate of matchingCandidates) {
+      const notificationDto = {
+        userId: candidate.userId.toString(),
+        type: 'NEW_JOB',
+        title: 'Công việc mới phù hợp',
+        message: `Công việc mới: ${job.name} vừa được đăng có thể phù hợp với bạn!`,
+        data: {
+          jobId: (job as any)._id.toString(),
+        },
+      };
+      await this.notificationService.create(notificationDto, candidate.userId.toString()); // Giả sử dùng Bull
     }
   }
 
