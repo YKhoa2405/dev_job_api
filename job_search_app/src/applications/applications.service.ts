@@ -6,15 +6,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Application, ApplicationDocument } from './schemas/application.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ApplicationsService {
-  constructor(@InjectModel(Application.name) private applycationModel: SoftDeleteModel<ApplicationDocument>) { }
+  constructor(
+    @InjectModel(Application.name) private applicationModel: SoftDeleteModel<ApplicationDocument>,
+    private notificationsService: NotificationsService
+  ) { }
 
-  async createApplyJob(createApplicationDto: CreateApplicationDto, user: IUser) {
+  async createApplyJob(createApplicationDto: CreateApplicationDto, user: IUser): Promise<Application> {
     const { companyId, jobId, name, phone, email, cv } = createApplicationDto;
-  
-    // Tạo object mới với các trường cần thiết, giảm lặp dữ liệu
+
+    // Tạo object mới với các trường cần thiết
     const newApplyData = {
       jobId,
       companyId,
@@ -25,12 +29,37 @@ export class ApplicationsService {
       cv,
       createBy: {
         _id: user._id,
-        email, // Sử dụng email từ DTO thay vì user.email để đảm bảo nhất quán
+        email, // Sử dụng email từ DTO
       },
     };
-  
-    const newApply = await this.applycationModel.create(newApplyData);
-  
+
+    const newApply = await this.applicationModel.create(newApplyData);
+
+    // Populate để lấy thông tin job và company
+    const populatedApply = await this.applicationModel
+      .findById(newApply._id)
+      .populate({
+        path: 'jobId',
+        select: 'name',
+      })
+      .exec();
+
+    const jobTitle = populatedApply.jobId.name;
+
+    // Gửi thông báo cho nhà tuyển dụng
+
+    const notificationDto = {
+      userId: companyId.toString(),
+      type: 'NEW_APPLICATION',
+      title: 'Ứng viên mới ứng tuyển',
+      message: `Ứng viên mới vừa ứng tuyển vào ${jobTitle}.`,
+      data: {
+        jobId: jobId.toString(),
+      }
+    };
+
+    await this.notificationsService.create(notificationDto, companyId.toString());
+
     return newApply;
   }
 
@@ -42,11 +71,11 @@ export class ApplicationsService {
     const skip = (+currentPage - 1) * +limit;
     const defaultLimit = +limit ? +limit : 10
 
-    const totalItems = (await this.applycationModel.find(filter)).length;
+    const totalItems = (await this.applicationModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit)
 
 
-    const result = await this.applycationModel
+    const result = await this.applicationModel
       .find(filter)
       .skip(skip)
       .limit(defaultLimit)
@@ -85,11 +114,11 @@ export class ApplicationsService {
   //   const skip = (+currentPage - 1) * +limit;
   //   const defaultLimit = +limit ? +limit : 10
 
-  //   const totalItems = (await this.applycationModel.find(filter)).length;
+  //   const totalItems = (await this.applicationModel.find(filter)).length;
   //   const totalPages = Math.ceil(totalItems / defaultLimit)
 
 
-  //   const result = await this.applycationModel
+  //   const result = await this.applicationModel
   //     .find(filter)
   //     .skip(skip)
   //     .limit(defaultLimit)
@@ -126,11 +155,11 @@ export class ApplicationsService {
     const skip = (+currentPage - 1) * +limit;
     const defaultLimit = +limit ? +limit : 10
 
-    const totalItems = await this.applycationModel.countDocuments(filter);
+    const totalItems = await this.applicationModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / defaultLimit)
 
 
-    const result = await this.applycationModel
+    const result = await this.applicationModel
       .find(searchQuery)
       .skip(skip)
       .limit(defaultLimit)
@@ -164,8 +193,8 @@ export class ApplicationsService {
 
     // Thực hiện truy vấn song song
     const [totalItems, result] = await Promise.all([
-      this.applycationModel.countDocuments(combinedFilter).lean().exec(),
-      this.applycationModel
+      this.applicationModel.countDocuments(combinedFilter).lean().exec(),
+      this.applicationModel
         .find(combinedFilter)
         .skip(skip)
         .limit(pageLimit)
@@ -201,7 +230,7 @@ export class ApplicationsService {
 
 
   updateApplication(id: string, status: string, user: IUser) {
-    return this.applycationModel.updateOne({ _id: id }, {
+    return this.applicationModel.updateOne({ _id: id }, {
       status: status,
       updateBy: {
         _id: user._id,
@@ -211,14 +240,14 @@ export class ApplicationsService {
   }
 
   removeApplication(id: string) {
-    return this.applycationModel.deleteOne({ _id: id });
+    return this.applicationModel.deleteOne({ _id: id });
   }
 
   findOne(id: string) {
-    return this.applycationModel
-        .findOne({ _id: id })
-        .populate('companyId', 'name') // Lấy name từ companyId
-        .populate('jobId', 'name'); // Lấy name từ jobId
-}
+    return this.applicationModel
+      .findOne({ _id: id })
+      .populate('companyId', 'name') // Lấy name từ companyId
+      .populate('jobId', 'name'); // Lấy name từ jobId
+  }
 
 }
