@@ -33,5 +33,5 @@ export class CreateCompanyDto {
 
   @IsBoolean()
   @IsOptional()
-  isApproved?: boolean = false;
+  isApproved?: boolean;
 }

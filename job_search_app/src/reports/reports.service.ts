@@ -110,9 +110,10 @@ export class ReportsService {
     };
   }
 
-  update(id: number, updateReportDto: UpdateReportDto) {
-    return `This action updates a #${id} report`;
+  update(id: string, category: string) {
+    return this.reportModel.updateOne({ _id: id }, { category })
   }
+
 
   remove(id: number) {
     return `This action removes a #${id} report`;

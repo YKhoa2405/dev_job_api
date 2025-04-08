@@ -50,10 +50,11 @@ export class CompaniesController {
   @Patch(':id')
   @UseInterceptors(FileInterceptor('avatar'))
   async update(
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateCompanyDto: UpdateCompanyDto,
     @Param('id') id: string,
-    @User() user: IUser,
-    @UploadedFile() file?: Express.Multer.File,) {
+    @User() user: IUser
+  ) {
     const avatar = file ? await this.filesService.uploadFile(file) : undefined;
     console.log(avatar)
     return this.companiesService.updateCompany(id, updateCompanyDto, user, avatar);

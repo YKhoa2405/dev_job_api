@@ -43,6 +43,7 @@ export class NotificationsService {
       .skip(skip)
       .limit(defaultLimit)
       .sort({ createdAt: -1 }) // Sử dụng sort từ query hoặc mặc định
+      .lean()
       .exec();
 
     return {

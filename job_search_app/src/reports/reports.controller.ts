@@ -37,8 +37,11 @@ export class ReportsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
-    return this.reportsService.update(+id, updateReportDto);
+  updateCategory(
+    @Param('id') id: string,
+    @Body('category') category: string,
+  ) {
+    return this.reportsService.update(id, category);
   }
 
   @Delete(':id')

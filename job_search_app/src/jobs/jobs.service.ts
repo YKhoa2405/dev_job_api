@@ -176,10 +176,10 @@ export class JobsService {
       .find(filter)
       .skip(skip)
       .limit(defaultLimit)
-      .sort({ createdAt: -1 })
+      .sort({ isActive: -1,createdAt: -1 })
       .populate({
         path: 'companyId',  // Populate companyId to get the company name
-        select: 'name',      // Only select the name of the company
+        select: 'name avatar',      // Only select the name of the company
       })
       .select('name quantity salary level isActive createdAt endDate skills isUrgent')  // Select only required fields
       .lean()
@@ -219,7 +219,7 @@ export class JobsService {
         .find(combinedFilter)
         .skip(skip)
         .limit(pageLimit)
-        .sort({ createdAt: -1 })
+        .sort({ isActive: -1,createdAt: -1 })
         .select('-updatedAt -isDeleted -deletedAt -createBy -__v -description -requirement -prioritize -location -latitude -longitude')
         .lean() // Chuyển thành plain object
         .exec(),
@@ -260,7 +260,7 @@ export class JobsService {
         .find(searchQuery)
         .skip(skip)
         .limit(pageLimit)
-        .sort({ createdAt: -1 })
+        .sort({ isActive: -1,createdAt: -1 })
         .populate({
           path: 'companyId',
           select: 'name avatar',
@@ -304,7 +304,7 @@ export class JobsService {
     // Thực hiện truy vấn với lean() để tối ưu
     const result = await this.jobModel
       .find(searchQuery)
-      .sort({ createdAt: -1 })
+      .sort({isActive: -1, createdAt: -1 })
       .populate({
         path: 'companyId',
         select: 'name avatar slogan',
