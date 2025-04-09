@@ -22,6 +22,9 @@ export class Message {
 
   @Prop({ default: Date.now })
   timestamp: Date;
+  
+  @Prop({ default: false }) // Thêm trường isRead, mặc định là false
+  isRead: boolean;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
