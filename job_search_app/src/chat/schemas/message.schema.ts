@@ -14,7 +14,7 @@ export class Message {
   @Prop({ required: true })
   recipientId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false, default: '' })
   message: string;
 
   @Prop({ default: null })

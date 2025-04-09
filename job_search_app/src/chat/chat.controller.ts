@@ -3,10 +3,13 @@ import { Controller, Get, Post, Query, UploadedFile, UseInterceptors, HttpExcept
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ChatService } from './chat.service';
 import { Message } from './schemas/message.schema';
+import { FilesService } from 'src/files/files.service';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) { }
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly filesService: FilesService) { }
 
   @Get('messages')
   async getMessages(
@@ -18,12 +21,16 @@ export class ChatController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File): Promise<{ fileUrl: string }> {
-    if (!file) {
-      throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File
+  ): Promise<{ fileUrl: string }> {
+    try {
+      const fileName = `chat/${Date.now()}_${file.originalname}`;
+      const fileUrl = await this.filesService.uploadFile(file); // Gọi hàm từ FilesService
+      return { fileUrl };
+    } catch (error) {
+      throw new HttpException(error.message || 'Failed to upload file', HttpStatus.BAD_REQUEST);
     }
-    const fileUrl = `http://your-server-url:3000/uploads/${file.filename}`; // Thay bằng logic thực tế
-    return { fileUrl };
   }
 
   @Get('rooms')

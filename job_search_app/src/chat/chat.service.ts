@@ -3,17 +3,21 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message, MessageDocument } from './schemas/message.schema';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { Company, CompanyDocument } from 'src/companies/schemas/company.schema';
+import { Candidate, CandidateDocument } from 'src/candidates/schemas/candidate.schema';
 
 @Injectable()
 export class ChatService {
-  constructor(@InjectModel(Message.name) private messageModel: Model<MessageDocument>) { }
+  constructor(
+    @InjectModel(Message.name) private messageModel: Model<MessageDocument>) { }
 
   async saveMessage(senderId: string, recipientId: string, message: string, fileUrl?: string): Promise<Message> {
     const newMessage = new this.messageModel({
       senderId,
       recipientId,
-      message,
-      fileUrl,
+      message: message || "",
+      fileUrl: fileUrl || null,
       timestamp: new Date(),
     });
     return newMessage.save();
@@ -60,6 +64,7 @@ export class ChatService {
             lastMessageText: "$lastMessage.message",
             lastMessageTimestamp: "$lastMessage.timestamp",
             senderId: "$lastMessage.senderId",
+            fileUrl: "$lastMessage.fileUrl"
           },
         },
       ])
@@ -76,6 +81,7 @@ export class ChatService {
             text: room.lastMessageText,
             timestamp: room.lastMessageTimestamp,
             senderId: room.senderId,
+            fileUrl: room.fileUrl || null,
           },
         };
       })
@@ -94,6 +100,8 @@ export class ChatService {
       avatar: "https://example.com/avatar.jpg",
     };
   }
+
+
 
 
 }
