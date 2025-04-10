@@ -106,6 +106,7 @@
     <p>Dựa trên cài đặt thông báo việc làm của bạn, <strong>DevJob</strong> đã tìm thấy <strong>{{countJobs}}</strong>
       việc làm mới phù hợp với bạn:</p>
 
+    {{#if jobs.length}}
     {{#each jobs}}
     <div class="job-card">
       <div class="job-info">
@@ -114,9 +115,13 @@
         <p class="job-details">{{this.salary}} VNĐ • {{this.location}}</p>
         <p class="job-details">{{this.skills}}</p>
       </div>
-      <img src="{{this.logo}}" alt="{{this.company}} Logo" class="job-logo">
+      <img src="{{this.logo}}" alt="Logo của {{this.company}}" class="job-logo"
+        onerror="this.src='https://via.placeholder.com/60'">
     </div>
     {{/each}}
+    {{else}}
+    <p class="content">Hiện tại chưa có công việc nào phù hợp với kỹ năng của bạn.</p>
+    {{/if}}
 
     <a href="https://example.com/job" class="cta-button">Xem tất cả việc làm</a>
   </div>

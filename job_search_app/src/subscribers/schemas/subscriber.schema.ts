@@ -19,6 +19,13 @@ export class Subscriber {
     _id: mongoose.Schema.Types.ObjectId
     email: string
   }
+
+  @Prop({
+    type: String,
+    enum: ['daily', 'wednesday', 'saturday'],
+    default: 'saturday', // Giá trị mặc định nếu người dùng không chọn
+  })
+  notificationSchedule: string;
 }
 
 export const SubscriberSchema = SchemaFactory.createForClass(Subscriber);
