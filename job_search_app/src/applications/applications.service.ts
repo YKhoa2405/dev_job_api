@@ -7,12 +7,13 @@ import { Application, ApplicationDocument } from './schemas/application.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     @InjectModel(Application.name) private applicationModel: SoftDeleteModel<ApplicationDocument>,
-    private notificationsService: NotificationsService
+    private readonly notificationsGateway: NotificationsGateway
   ) { }
 
   async createApplyJob(createApplicationDto: CreateApplicationDto, user: IUser): Promise<Application> {
@@ -51,14 +52,14 @@ export class ApplicationsService {
     const notificationDto = {
       userId: companyId.toString(),
       type: 'NEW_APPLICATION',
-      title: 'Ứng viên mới ứng tuyển',
+      title: 'Hồ sơ ứng tuyển mới',
       message: `Ứng viên mới vừa ứng tuyển vào ${jobTitle}.`,
       data: {
         jobId: jobId.toString(),
       }
     };
 
-    await this.notificationsService.create(notificationDto, companyId.toString());
+    await this.notificationsGateway.sendNotification(companyId.toString(), notificationDto);
 
     return newApply;
   }
@@ -104,43 +105,6 @@ export class ApplicationsService {
     }
   }
 
-  // async getApplicationByCompany(currentPage: number, limit: number, qr: string, companyId: string) {
-  //   const { filter, sort, population, projection } = aqp(qr)
-  //   delete filter.page
-  //   delete filter.limit
-
-  //   filter.companyId = companyId;
-
-  //   const skip = (+currentPage - 1) * +limit;
-  //   const defaultLimit = +limit ? +limit : 10
-
-  //   const totalItems = (await this.applicationModel.find(filter)).length;
-  //   const totalPages = Math.ceil(totalItems / defaultLimit)
-
-
-  //   const result = await this.applicationModel
-  //     .find(filter)
-  //     .skip(skip)
-  //     .limit(defaultLimit)
-  //     .sort({ createdAt: -1 })
-  //     .populate([
-  //       {
-  //         path: 'jobId',
-  //         select: 'name',
-  //       },
-  //     ])
-  //     .select('-updatedAt -isDeleted -deletedAt -createBy -__v')
-  //     .exec();
-
-  //   return {
-  //     meta: {
-  //       currentPage: currentPage,
-  //       pageSize: defaultLimit,
-  //       totalItems: totalItems,
-  //       totalPages: totalPages
-  //     }, result
-  //   }
-  // }
 
   async getApplicationByJob(currentPage: number, limit: number, qr: string, jobId: string) {
     const { filter, sort, population, projection } = aqp(qr)
@@ -177,7 +141,7 @@ export class ApplicationsService {
     }
   }
 
-  async getApplicationByUser(currentPage: number, limit: number, qr: string, user: IUser) {
+  async getApplicationByCandidate(currentPage: number, limit: number, qr: string, user: IUser) {
     const { filter, sort, population, projection } = aqp(qr);
 
     // Loại bỏ các tham số không cần thiết

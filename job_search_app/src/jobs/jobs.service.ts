@@ -3,7 +3,6 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Job, JobDocument, JobLevel, JobType } from './schemas/job.schema';
-import { User } from 'src/users/schemas/user.schema';
 import { IUser } from 'src/users/users.interface';
 import { Model } from 'mongoose';
 import aqp from 'api-query-params';
@@ -11,9 +10,8 @@ import { Skill } from 'src/skills/schemas/skill.schema';
 import { Application } from 'src/applications/schemas/application.schema';
 import { Order } from 'src/orders/schemas/order.schema';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Candidate } from 'src/candidates/schemas/candidate.schema';
 import { CandidatesService } from 'src/candidates/candidates.service';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Injectable()
 export class JobsService {
@@ -22,8 +20,8 @@ export class JobsService {
     @InjectModel(Application.name) private applicationModel: Model<Application>,
     @InjectModel(Skill.name) private skillModel: Model<Skill>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
-    private notificationService: NotificationsService,
     private candidateService: CandidatesService,
+    private readonly notificationsGateway: NotificationsGateway,
   ) { }
 
   async createJob(createJobDto: CreateJobDto, user: IUser) {
@@ -124,7 +122,10 @@ export class JobsService {
           jobId: (job as any)._id.toString(),
         },
       };
-      await this.notificationService.create(notificationDto, candidate.userId.toString()); // Giả sử dùng Bull
+      await this.notificationsGateway.sendNotification(
+        candidate.userId.toString(),
+        notificationDto,
+      );
     }
   }
 

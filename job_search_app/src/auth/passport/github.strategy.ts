@@ -14,20 +14,24 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
         super({
             clientID: configService.get<string>('GITHUB_CLIENT_ID'),
             clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET'),
-            callbackURL: 'http://localhost:3000/auth/github/callback', // URL callback
+            callbackURL: 'http://192.168.1.120:8000/auth/github/callback', // URL callback
+            // callbackURL: 'devjob:/oauth',
             scope: ['user:email'],  // Scope lấy email
         });
     }
 
     async validate(accessToken: string, refreshToken: string, profile: any) {
 
-        const { emails, photos } = profile;
+        const { emails, photos, username, id } = profile;
         const userData = {
-            email: emails[0].value,
-            avatar: photos[0].value,
-
+          githubId: id, // Lưu ID GitHub để đồng bộ
+          email: emails?.[0]?.value || `${username}@github.com`, // Fallback nếu không có email
+          avatar: photos?.[0]?.value,
+          username: username || profile.displayName,
+          role: { name: 'NORMAL_USER' },
         };
 
-        return this.userService.findOrCreate(userData)
+        const user = await this.userService.findOrCreate(userData);
+        return user;
     }
 }

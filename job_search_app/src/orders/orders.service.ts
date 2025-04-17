@@ -7,13 +7,14 @@ import aqp from 'api-query-params';
 import { IUser } from 'src/users/users.interface';
 import { Service, ServiceDocument } from 'src/services/schemas/service.schema';
 import { Cron } from '@nestjs/schedule';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
-
+    private readonly notificationsGateway: NotificationsGateway
   ) { }
 
   private calculateEndDate(startDate: Date, duration: number): Date {
@@ -61,6 +62,17 @@ export class OrdersService {
       },
     });
 
+    const notificationDto = {
+      userId: companyId.toString(),
+      type: 'NEW_ORDER',
+      title: 'Mua dịch vụ thành công',
+      message: `Bạn đã mua thành công dịch vụ ${service.name}.`,
+      data: {
+        serviceId: service._id.toString(),
+      },
+    };
+
+    await this.notificationsGateway.sendNotification(companyId.toString(), notificationDto);
     return newOrder;
   }
 

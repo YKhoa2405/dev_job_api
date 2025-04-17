@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesService } from 'src/roles/roles.service';
 import { IUser } from 'src/users/users.interface';
+import { Response } from 'express';
 
 
 @Controller('auth')
@@ -53,7 +54,6 @@ export class AuthController {
   }
 
 
-  // Giao diện login google
   @Public()
   @Get('github')
   @UseGuards(AuthGuard('github'))
@@ -66,12 +66,16 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubCallback(@Req() req, @Res() res: Response) {
-
-    const loginResponse = await this.authService.login(req.user);
-    console.log('userDate', req.user)
-    console.log('Access Token:', loginResponse.access_token);
-
-
+    try {
+      const user = req.user;
+      const loginResponse = await this.authService.login(user);
+      console.log('userDate', req.user)
+      console.log('Access Token:', loginResponse.access_token);
+      const redirectUri = `devjob:/oauth?token=${loginResponse.access_token}`;
+      res.redirect(redirectUri);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   }
 
 }

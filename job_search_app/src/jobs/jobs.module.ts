@@ -20,7 +20,7 @@ import { CandidatesModule } from 'src/candidates/candidates.module';
     MongooseModule.forFeature([{ name: Candidate.name, schema: CandidateSchema }]),
     MongooseModule.forFeature([{ name: Notification.name, schema: NotificationSchema }]),
     NotificationsModule,
-    CandidatesModule,  
+    CandidatesModule, 
   ],
   controllers: [JobsController],
   providers: [JobsService],
